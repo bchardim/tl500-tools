@@ -164,7 +164,7 @@ helm upgrade --install uj --namespace ${TEAM_NAME}-ci-cd .
 oc get projects | grep ${TEAM_NAME}
 oc get pods -n ${TEAM_NAME}-ci-cd
 
-echo "==> Log to https://${ARGO_URL} and verify that ubiquitous-journey app is deployed"
+echo "==> Log to ${ARGO_URL} and verify that ubiquitous-journey app is deployed"
 read -p "Press [Enter] when done to continue..."
 
 
@@ -190,11 +190,11 @@ git add .
 git commit -m  "ADD - nexus repo manager"
 git push 
 
-echo "==> Log to https://${ARGO_URL} and verify that ubiquitous-journey app has deployed a nexus server"
+echo "==> Log to https://${ARGO_URL} and verify that ubiquitous-journey app has deployed a nexus server. We patient, can take up to 5-10min."
 read -p "Press [Enter] when done to continue..."
 
 
 NEXUS_URL=$(echo https://$(oc get route nexus --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd))
-echo "==> Log to https://${NEXUS_URL}. See credentials on step 4)"
+echo "==> Log to ${NEXUS_URL}. See credentials on step 4)"
 read -p "Press [Enter] when done to continue..."
 
