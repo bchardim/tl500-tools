@@ -1,12 +1,10 @@
 #!/bin/bash
 
-
 #
 # Input
 #
 USERNAME=$1
 PASSWORD=$2
-
 
 #
 # Configuration
@@ -15,10 +13,11 @@ TEAM_NAME=zteam
 CLUSTER_DOMAIN=ocp4.example.com
 GIT_SERVER=gitlab-ce.apps.ocp4.example.com
 
-
-echo "###"
-echo "### The Manual Menace -> The Basics"
-echo "###"
+echo
+echo "#######################################"
+echo "### The Manual Menace -> The Basics ###"
+echo "#######################################"
+echo
 
 #
 # Set env
@@ -56,10 +55,11 @@ sleep 60
 oc get pods -n ${TEAM_NAME}-ci-cd
 helm uninstall my --namespace ${TEAM_NAME}-ci-cd
 
-echo "###"
-echo "### The Manual Menace -> ArgoCD"
-echo "###"
-
+echo
+echo "###################################"
+echo "### The Manual Menace -> ArgoCD ###"
+echo "###################################"
+echo
 
 helm repo add redhat-cop https://redhat-cop.github.io/helm-charts
 
@@ -117,9 +117,11 @@ read -p "Press [Enter] when done to continue..."
 
 echo https://$(oc get route/our-todolist -n ${TEAM_NAME}-ci-cd --template='{{.spec.host}}')
 
-echo "###"
-echo "### The Manual Menace -> Ubiquitous Journey"
-echo "###"
+echo
+echo "###############################################"
+echo "### The Manual Menace -> Ubiquitous Journey ###"
+echo "###############################################"
+echo
 
 echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1), 2), 3), 4) and 5)"
 read -p "Press [Enter] when done to continue..."
@@ -167,10 +169,11 @@ oc get pods -n ${TEAM_NAME}-ci-cd
 echo "==> Log to ${ARGO_URL} and verify that ubiquitous-journey app is deployed"
 read -p "Press [Enter] when done to continue..."
 
-
-echo "###"
-echo "### The Manual Menace -> Extend UJ"
-echo "###"
+echo
+echo "######################################"
+echo "### The Manual Menace -> Extend UJ ###"
+echo "######################################"
+echo
 
 cd /projects/tech-exercise
 git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
