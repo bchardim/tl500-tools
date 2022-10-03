@@ -214,3 +214,33 @@ NEXUS_URL=$(echo https://$(oc get route nexus --template='{{ .spec.host }}' -n $
 echo "==> Log to ${NEXUS_URL}. See credentials on step 4)"
 read -p "Press [Enter] when done to continue..."
 
+
+echo
+echo "###########################################"
+echo "### The Manual Menace -> This is GitOps ###"
+echo "###########################################"
+echo
+
+cd /projects/tech-exercise
+git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
+git pull
+
+echo "==> Log to https://console-openshift-console.apps.ocp4.example.com and perform the manual steps 1) and 2)."
+read -p "Press [Enter] when done to continue..."
+
+if [[ $(yq e '.applications.[].values.deployment.env_vars[] | select(.name=="BISCUITS") | length' /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml) < 1 ]]; then
+    yq e '.applications.[1].values.deployment.env_vars += {"name": "BISCUITS", "value": "jaffa-cakes"}' -i /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml
+fi
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - Jenkins environment variable"
+git push 
+
+echo "==> Log to https://${ARGO_URL} and verify that ubiquitous-journey jenkins deploy synced."
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Log to https://console-openshift-console.apps.ocp4.example.com and verify that jenkins deploy has the new var BISCUITS."
+read -p "Press [Enter] when done to continue..."
+
+
