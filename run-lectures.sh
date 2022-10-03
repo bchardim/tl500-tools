@@ -207,7 +207,7 @@ git add .
 git commit -m  "ADD - nexus repo manager"
 git push 
 
-echo "==> Log to https://${ARGO_URL} and verify that ubiquitous-journey app has deployed a nexus server. We patient, can take up to 5-10min."
+echo "==> Log to ${ARGO_URL} and verify that ubiquitous-journey app has deployed a nexus server. We patient, can take up to 5-10min."
 read -p "Press [Enter] when done to continue..."
 
 
@@ -243,5 +243,14 @@ read -p "Press [Enter] when done to continue..."
 
 echo "==> Log to https://console-openshift-console.apps.ocp4.example.com and verify that jenkins deploy has the new var BISCUITS."
 read -p "Press [Enter] when done to continue..."
+
+echo
+echo "############################################"
+echo "### The Manual Menace -> Here Be Dragons ###"
+echo "############################################"
+echo
+
+echo "It is not expected to be executed during the course."
+echo "It is just a summary of steps already done?."
 
 
