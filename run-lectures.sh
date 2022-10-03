@@ -42,7 +42,7 @@ echo export PASSWORD="${PASSWORD}" | tee -a ~/.bashrc -a ~/.zshrc
 echo export GITLAB_USER="${USERNAME}" | tee -a ~/.bashrc -a ~/.zshrc
 echo export GITLAB_PASSWORD="${PASSWORD}" | tee -a ~/.bashrc -a ~/.zshrc
 
-source ~/.zshrc
+source ~/.bashrc
 echo ${TEAM_NAME}
 echo ${CLUSTER_DOMAIN}
 echo ${GIT_SERVER}
@@ -138,9 +138,10 @@ echo
 echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1), 2), 3), 4) and 5)"
 read -p "Press [Enter] when done to continue..."
 
-source ~/.zshrc
+source ~/.bashrc
 GITLAB_PAT=$(gitlab_pat)
-echo ${GITLAB_PAT}
+echo "GITLAB_USER: ${GITLAB_USER}"
+echo "GITLAB_PAT:  ${GITLAB_PAT}"
 
 cd /projects/tech-exercise
 git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
