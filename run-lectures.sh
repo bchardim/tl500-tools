@@ -46,6 +46,7 @@ source ~/.zshrc
 echo ${TEAM_NAME}
 echo ${CLUSTER_DOMAIN}
 echo ${GIT_SERVER}
+source /usr/local/bin/user-functions.sh
 
 #
 # Login to OCP4 and create project
