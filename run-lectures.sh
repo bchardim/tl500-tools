@@ -14,10 +14,11 @@ CLUSTER_DOMAIN=ocp4.example.com
 GIT_SERVER=gitlab-ce.apps.ocp4.example.com
 
 
-if [ "$1" == "reset" ]
+if [ "$1" == "--reset" ]
 then
+  helm uninstall argocd --namespace ${TEAM_NAME}-ci-cd
+  helm uninstall uj --namespace ${TEAM_NAME}-ci-cd
   oc delete all --all -n ${TEAM_NAME}-ci-cd
-  oc delete project ${TEAM_NAME}
   exit 0
 fi
 
