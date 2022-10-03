@@ -13,6 +13,15 @@ TEAM_NAME=zteam
 CLUSTER_DOMAIN=ocp4.example.com
 GIT_SERVER=gitlab-ce.apps.ocp4.example.com
 
+
+if [ "$1" == "reset" ]
+then
+  oc delete all --all -n ${TEAM_NAME}-ci-cd
+  oc delete project ${TEAM_NAME}
+  exit 0
+fi
+
+
 echo
 echo "#######################################"
 echo "### The Manual Menace -> The Basics ###"
@@ -126,6 +135,7 @@ echo
 echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1), 2), 3), 4) and 5)"
 read -p "Press [Enter] when done to continue..."
 
+source ~/.zshrc
 GITLAB_PAT=$(gitlab_pat)
 echo ${GITLAB_PAT}
 
