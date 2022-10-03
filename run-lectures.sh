@@ -16,7 +16,7 @@ GIT_SERVER=gitlab-ce.apps.ocp4.example.com
 
 if [ "$1" == "--reset" ]
 then
-  helm uninstall my --namespace ${TEAM_NAME}-ci-cd
+  helm uninstall my tl500/todolist --namespace ${TEAM_NAME}-ci-cd
   helm uninstall argocd --namespace ${TEAM_NAME}-ci-cd
   helm uninstall uj --namespace ${TEAM_NAME}-ci-cd
   oc delete all --all -n ${TEAM_NAME}-ci-cd
