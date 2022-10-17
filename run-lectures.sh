@@ -421,3 +421,52 @@ read -p "Press [Enter] when done to continue..."
 echo "==> Log to https://console-openshift-console.apps.ocp4.example.com and perform the manual steps 6)"
 read -p "Press [Enter] when done to continue..."
 
+echo
+echo "#################################################"
+echo "### Attack of the Pipelines -> The Pipelines  ###"
+echo "#################################################"
+echo
+
+cd /projects/tech-exercise
+git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
+git pull
+
+echo "Jenkins Group"
+
+echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1). Create a Project in GitLab under <TEAM_NAME> group called pet-battle. Make the project as public."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects
+git clone https://github.com/rht-labs/pet-battle.git && cd pet-battle
+git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/pet-battle.git
+git branch -M main
+git push -u origin main
+
+PET_JEN_TOKEN=$(echo "https://$(oc get route jenkins --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd)/multibranch-webhook-trigger/invoke?token=pet-battle")
+
+echo "==> Log to https://${GIT_SERVER} . Add ${PET_JEN_TOKEN} on pet-battle > Settings > Integrations."
+read -p "Press [Enter] when done to continue..."
+
+yq e '(.applications[] | (select(.name=="jenkins").values.deployment.env_vars[] | select(.name=="GITLAB_HOST")).value)|=env(GIT_SERVER)' -i /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml
+yq e '(.applications[] | (select(.name=="jenkins").values.deployment.env_vars[] | select(.name=="GITLAB_GROUP_NAME")).value)|=env(TEAM_NAME)' -i /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml
+yq e '.applications.pet-battle.source |="http://nexus:8081/repository/helm-charts"' -i /projects/tech-exercise/pet-battle/test/values.yaml
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - jenkins pipelines config"
+git push
+
+echo "==> Log to ${JENKINS_URL}. See the seed job has scaffolded out a pipeline for the frontend in the Jenkins UI. It’s done this by looking in the pet-battle repo where it found the Jenkinsfile (our pipeline definition). However it will fail on the first execution. This is expected as we’re going write some stuff to fix it! - If after Jenkins restarts you do not see the job run, feel free to manually trigger it to get it going"
+read -p "Press [Enter] when done to continue..."
+
+wget -O /projects/pet-battle/Jenkinsfile https://raw.githubusercontent.com/rht-labs/tech-exercise/main/tests/doc-regression-test-files/3a-jenkins-Jenkinsfile.groovy
+
+cd /projects/pet-battle
+git add Jenkinsfile
+git commit -m "Jenkinsfile updated with build stage"
+git push
+
+echo "==> Log to ${JENKINS_URL}. See the  pet-battle pipeline is running successfully. If you swap to the Blue Ocean view, you get a lovely graph of what it looks like in execution."
+read -p "Press [Enter] when done to continue..."
+
+echo "Tekton Group"
