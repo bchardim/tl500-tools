@@ -318,7 +318,7 @@ echo "==> Log to https://${ARGO_URL} and verify SealedSecret chart. Drill into t
 read -p "Press [Enter] when done to continue..."
 
 JENKINS_URL=$(echo https://$(oc get route jenkins --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd))
-echo "==> Log to ${JENKINS_URL}. Verify Jenkins syncedg Jenkins -> Manage Jenkins -> Manage Credentials to view <TEAM_NAME>-ci-cd-git-auth"
+echo "==> Log to ${JENKINS_URL}. Verify Jenkins synced Jenkins -> Manage Jenkins -> Manage Credentials to view <TEAM_NAME>-ci-cd-git-auth"
 read -p "Press [Enter] when done to continue..."
 
 echo
