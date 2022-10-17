@@ -444,7 +444,7 @@ git push -u origin main
 
 PET_JEN_TOKEN=$(echo "https://$(oc get route jenkins --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd)/multibranch-webhook-trigger/invoke?token=pet-battle")
 
-echo "==> Log to https://${GIT_SERVER} . Add ${PET_JEN_TOKEN} on pet-battle > Settings > Integrations."
+echo "==> Log to https://${GIT_SERVER} . Add Pet Battle jenkins token ${PET_JEN_TOKEN} on pet-battle > Settings > Integrations."
 read -p "Press [Enter] when done to continue..."
 
 yq e '(.applications[] | (select(.name=="jenkins").values.deployment.env_vars[] | select(.name=="GITLAB_HOST")).value)|=env(GIT_SERVER)' -i /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml
