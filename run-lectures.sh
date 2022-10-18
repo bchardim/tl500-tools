@@ -14,7 +14,7 @@ PASSWORD=$2
 # Configuration
 #
 TEAM_NAME=zteam
-CLUSTER_DOMAIN=ocp4.example.com
+CLUSTER_DOMAIN=apps.ocp4.example.com
 GIT_SERVER=gitlab-ce.apps.ocp4.example.com
 OCP_CONSOLE=https://console-openshift-console.apps.ocp4.example.com
 
