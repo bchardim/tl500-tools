@@ -16,7 +16,7 @@ PASSWORD=$2
 TEAM_NAME=zteam
 CLUSTER_DOMAIN=ocp4.example.com
 GIT_SERVER=gitlab-ce.apps.ocp4.example.com
-
+OCP_CONSOLE=https://console-openshift-console.apps.ocp4.example.com
 
 if [ "$1" == "--reset" ]
 then
@@ -230,7 +230,7 @@ cd /projects/tech-exercise
 git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
 git pull
 
-echo "==> Log to https://console-openshift-console.apps.ocp4.example.com and perform the manual steps 1) and 2)."
+echo "==> Log to ${OCP_CONSOLE} and perform the manual steps 1) and 2)."
 read -p "Press [Enter] when done to continue..."
 
 if [[ $(yq e '.applications.[].values.deployment.env_vars[] | select(.name=="BISCUITS") | length' /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml) < 1 ]]; then
@@ -245,7 +245,7 @@ git push
 echo "==> Log to https://${ARGO_URL} and verify that ubiquitous-journey jenkins deploy synced."
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Log to https://console-openshift-console.apps.ocp4.example.com and verify that jenkins deploy has the new var BISCUITS."
+echo "==> Log to ${OCP_CONSOLE} and verify that jenkins deploy has the new var BISCUITS."
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -418,7 +418,7 @@ git push
 echo "==> Log to https://${ARGO_URL} and verify Pet Battle apps for test and stage. Drill into one eg test-app-of-pb and see each of the three components of PetBattle"
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Log to https://console-openshift-console.apps.ocp4.example.com and perform the manual steps 6)"
+echo "==> Log to ${OCP_CONSOLE} perform the manual steps 6)"
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -431,7 +431,10 @@ cd /projects/tech-exercise
 git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
 git pull
 
+echo
 echo "Jenkins Group"
+echo"--------------"
+echo
 
 echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1). Create a Project in GitLab under <TEAM_NAME> group called pet-battle. Make the project as public."
 read -p "Press [Enter] when done to continue..."
@@ -466,7 +469,53 @@ git add Jenkinsfile
 git commit -m "Jenkinsfile updated with build stage"
 git push
 
-echo "==> Log to ${JENKINS_URL}. See the  pet-battle pipeline is running successfully. If you swap to the Blue Ocean view, you get a lovely graph of what it looks like in execution."
+echo "==> Log to ${JENKINS_URL}. See the  pet-battle pipeline is running successfully. Use the Blue Ocean view,"
 read -p "Press [Enter] when done to continue..."
 
+echo
 echo "Tekton Group"
+echo "------------"
+echo
+
+echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1). Create a Project in GitLab under <TEAM_NAME> group called pet-battle-api. Make the project as internal."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects
+git clone https://github.com/rht-labs/pet-battle-api.git && cd pet-battle-api
+git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/pet-battle-api.git
+git branch -M main
+git push -u origin main
+
+if [[ $(yq e '.applications[] | select(.name=="tekton-pipeline") | length' /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml) < 1 ]]; then
+    yq e '.applications += {"name": "tekton-pipeline","enabled": true,"source": "https://GIT_SERVER/TEAM_NAME/tech-exercise.git","source_ref": "main","source_path": "tekton","values": {"team": "TEAM_NAME","cluster_domain": "CLUSTER_DOMAIN","git_server": "GIT_SERVER"}}' -i /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml
+    sed -i "s|GIT_SERVER|$GIT_SERVER|" /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml
+    sed -i "s|TEAM_NAME|$TEAM_NAME|" /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml    
+    sed -i "s|CLUSTER_DOMAIN|$CLUSTER_DOMAIN|" /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml    
+fi
+
+yq e '.applications.pet-battle-api.source |="http://nexus:8081/repository/helm-charts"' -i /projects/tech-exercise/pet-battle/test/values.yaml
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - tekton pipelines config"
+git push
+
+echo "==> Log to https://${ARGO_URL} and verify ubiquitous-jorney app has a tekton-pipeline resource"
+read -p "Press [Enter] when done to continue..." 
+
+PET_API_TOKEN=$(echo https://$(oc -n ${TEAM_NAME}-ci-cd get route webhook --template='{{ .spec.host }}'))
+
+echo "==> Log to https://${GIT_SERVER} . Add Pet Battle API token ${PET_API_TOKEN} on pet-battle-api > Settings > Integrations. Test the hook with Project Hooks -> Test -> Push events"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle-api
+mvn -ntp versions:set -DnewVersion=1.3.1
+
+cd /projects/pet-battle-api
+git add .
+git commit -m  "UPDATED - pet-battle-version to 1.3.1"
+git push 
+
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project. Also, use the tkn command line to observe PipelineRun logs as well: 'tkn -n ${TEAM_NAME}-ci-cd pr logs -Lf'"
+read -p "Press [Enter] when done to continue..."
+
