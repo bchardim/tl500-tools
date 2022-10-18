@@ -198,7 +198,7 @@ git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
 git pull
 ARGO_WEBHOOK=$(echo https://$(oc get route argocd-server --template='{{ .spec.host }}'/api/webhook  -n ${TEAM_NAME}-ci-cd))
 
-echo "==> Log to https://${GIT_SERVER} and perform the manual steps 2). The argocd webhook url is ${ARGO_WEBHOOK}"
+echo "==> Log to https://${GIT_SERVER} and perform the manual steps 2). The argocd webhook url is ${ARGO_WEBHOOK}. Test the webhook Project hooks -> Test -> Push events."
 read -p "Press [Enter] when done to continue..."
 
 
@@ -382,30 +382,9 @@ echo "pet-battle test definition"
 cat /projects/tech-exercise/pet-battle/test/values.yaml
 
 echo "Deploying Pet Battle Stage"
-
-if [[ $(yq e '.applications[] | select(.name=="pet-battle-api") | length' /projects/tech-exercise/pet-battle/stage/values.yaml) < 1 ]]; then
-    yq e '.applications.pet-battle-api = {"name": "pet-battle-api","enabled": true,"source": "https://petbattle.github.io/helm-charts","chart_name": "pet-battle-api","source_ref": "1.2.1","values": {"image_name": "pet-battle-api","image_version": "latest", "hpa": {"enabled": false}}}' -i /projects/tech-exercise/pet-battle/stage/values.yaml
-fi
-if [[ $(yq e '.applications[] | select(.name=="pet-battle") | length' /projects/tech-exercise/pet-battle/stage/values.yaml) < 1 ]]; then
-    yq e '.applications.pet-battle = {"name": "pet-battle","enabled": true,"source": "https://petbattle.github.io/helm-charts","chart_name": "pet-battle","source_ref": "1.0.6","values": {"image_version": "latest"}}' -i /projects/tech-exercise/pet-battle/stage/values.yaml
-fi
-sed -i '/^$/d' /projects/tech-exercise/pet-battle/stage/values.yaml
-sed -i '/^# Keycloak/d' /projects/tech-exercise/pet-battle/stage/values.yaml
-sed -i '/^# Pet Battle Apps/d' /projects/tech-exercise/pet-battle/stage/values.yaml
-
-export JSON="'"'{
-        "catsUrl": "https://pet-battle-api-'${TEAM_NAME}'-stage.'${CLUSTER_DOMAIN}'",
-        "tournamentsUrl": "https://pet-battle-tournament-'${TEAM_NAME}'-stage.'${CLUSTER_DOMAIN}'",
-        "matomoUrl": "https://matomo-'${TEAM_NAME}'-ci-cd.'${CLUSTER_DOMAIN}'/",
-        "keycloak": {
-          "url": "https://keycloak-'${TEAM_NAME}'-stage.'${CLUSTER_DOMAIN}'/auth/",
-          "realm": "pbrealm",
-          "clientId": "pbclient",
-          "redirectUri": "http://localhost:4200/tournament",
-          "enableLogging": true
-        }
-      }'"'"
-yq e '.applications.pet-battle.values.config_map = env(JSON) | .applications.pet-battle.values.config_map style="single"' -i /projects/tech-exercise/pet-battle/stage/values.yaml
+cp -f /projects/tech-exercise/pet-battle/test/values.yaml /projects/tech-exercise/pet-battle/stage/values.yaml
+sed -i "s|${TEAM_NAME}-test|${TEAM_NAME}-stage|" /projects/tech-exercise/pet-battle/stage/values.yaml
+sed -i 's|release: "test"|release: "stage"|' /projects/tech-exercise/pet-battle/stage/values.yaml
 
 echo "pet-battle stage definition"
 cat /projects/tech-exercise/pet-battle/stage/values.yaml
@@ -418,7 +397,7 @@ git push
 echo "==> Log to https://${ARGO_URL} and verify Pet Battle apps for test and stage. Drill into one eg test-app-of-pb and see each of the three components of PetBattle"
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Log to ${OCP_CONSOLE} perform the manual steps 6)"
+echo "==> Log to ${OCP_CONSOLE} Developer View -> Topology and select your <TEAM_NAME>-test ns -> Route )"
 read -p "Press [Enter] when done to continue..."
 
 echo
