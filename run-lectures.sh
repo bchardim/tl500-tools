@@ -397,7 +397,7 @@ git push
 echo "==> Log to https://${ARGO_URL} and verify Pet Battle apps for test and stage. Drill into one eg test-app-of-pb and see each of the three components of PetBattle"
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Log to ${OCP_CONSOLE} Developer View -> Topology and select your <TEAM_NAME>-test ns -> Route )"
+echo "==> Log to ${OCP_CONSOLE} Developer View -> Topology and select your <TEAM_NAME>-test|stage ns -> Route )"
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -412,7 +412,7 @@ git pull
 
 echo
 echo "Jenkins Group"
-echo"--------------"
+echo "--------------"
 echo
 
 echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1). Create a Project in GitLab under <TEAM_NAME> group called pet-battle. Make the project as public."
