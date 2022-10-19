@@ -244,7 +244,7 @@ git add .
 git commit -m  "ADD - Jenkins environment variable"
 git push 
 
-echo "==> Log to https://${ARGO_URL} and verify that ubiquitous-journey jenkins deploy synced."
+echo "==> Log to ${ARGO_URL} and verify that ubiquitous-journey jenkins deploy synced."
 read -p "Press [Enter] when done to continue..."
 
 echo "==> Log to ${OCP_CONSOLE} and verify that jenkins deploy has the new var BISCUITS."
@@ -446,6 +446,11 @@ read -p "Press [Enter] when done to continue..."
 
 wget -O /projects/pet-battle/Jenkinsfile https://raw.githubusercontent.com/rht-labs/tech-exercise/main/tests/doc-regression-test-files/3a-jenkins-Jenkinsfile.groovy
 
+
+echo "==> HOTFIX TBR - Execute and add?  sh 'git config --global http.sslVerify false' on jenkins pod / /projects/pet-battle/Jenkinsfile "
+read -p "Press [Enter] when done to continue..."
+
+
 cd /projects/pet-battle
 git add Jenkinsfile
 git commit -m "Jenkinsfile updated with build stage"
@@ -458,6 +463,10 @@ echo
 echo "Tekton Group"
 echo "------------"
 echo
+
+echo "==> HOTFIX TBR - Add 'sslVerify: false' workaround to all git instances at /projects/tech-exercise/tekton/templates/pipeline/maven-pipeline.yaml"
+read -p "Press [Enter] when done to continue..."
+
 
 echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1). Create a Project in GitLab under <TEAM_NAME> group called pet-battle-api. Make the project as internal."
 read -p "Press [Enter] when done to continue..."
@@ -536,9 +545,9 @@ git add ubiquitous-journey/values-tooling.yaml
 git commit -m  "ADD - sonarqube creds sealed secret"
 git push
 
-sleep 30; oc get secrets -n <TEAM_NAME>-ci-cd | grep sonarqube-auth
+sleep 30; oc get secrets -n ${TEAM_NAME}-ci-cd | grep sonarqube-auth
 
-echo "==> Perform step 5) in your IDE using the previous output ^^"
+echo "==> Perform steps 3), 4), and  5) in your IDE using the previous output ^^"
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/tech-exercise
@@ -552,5 +561,57 @@ read -p "Press [Enter] when done to continue..."
 SONAR_URL=$(echo https://$(oc get route sonarqube --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd))
 echo export SONAR_URL="${SONAR_URL}" | tee -a ~/.bashrc -a ~/.zshrc
 
-echo "==> Log to https://${SONAR_URL} and verify installation is successful (admin/admin123)."
+echo "==> Log to ${SONAR_URL} and verify installation is successful (admin/admin123)."
 read -p "Press [Enter] when done to continue..."
+
+echo
+echo "#####################################################################"
+echo "### The Revenge of the Automated Testing -> Sonarqube -> Jenkins  ###"
+echo "#####################################################################"
+echo
+
+cd /projects/pet-battle
+cat << EOF > sonar-project.js
+const scanner = require('sonarqube-scanner');
+
+scanner(
+  {
+    serverUrl: 'http://sonarqube-sonarqube:9000',
+    options: {
+      'sonar.login': process.env.SONARQUBE_USERNAME,
+      'sonar.password': process.env.SONARQUBE_PASSWORD,
+      'sonar.projectName': 'Pet Battle',
+      'sonar.projectDescription': 'Pet Battle UI',
+      'sonar.sources': 'src',
+      'sonar.tests': 'src',
+      'sonar.inclusions': '**', // Entry point of your code
+      'sonar.test.inclusions': 'src/**/*.spec.js,src/**/*.spec.ts,src/**/*.spec.jsx,src/**/*.test.js,src/**/*.test.jsx',
+      'sonar.exclusions': '**/node_modules/**',
+      //'sonar.test.exclusions': 'src/app/core/*.spec.ts',
+      // 'sonar.javascript.lcov.reportPaths': 'reports/lcov.info',
+      // 'sonar.testExecutionReportPaths': 'coverage/test-reporter.xml'
+    }
+  },
+  () => process.exit()
+);
+EOF
+
+echo "==> Perform step 2) and 3) in your IDE using /projects/pet-battle/Jenkinsfile"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle
+git add Jenkinsfile sonar-project.js
+git commit -m "test code-analysis step"
+git push
+
+echo "==> Observe the pet-battle Jenkins Pipeline at ${JENKINS_URL} and when scanning is completed, browse the ${SONAR_URL} to see Pet Battle project created"
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "#####################################################################"
+echo "### The Revenge of the Automated Testing -> Sonarqube -> Tekton   ###"
+echo "#####################################################################"
+echo
+
+
+
