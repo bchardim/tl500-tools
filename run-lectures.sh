@@ -45,6 +45,7 @@ echo export USERNAME="${USERNAME}" | tee -a ~/.bashrc -a ~/.zshrc
 echo export PASSWORD="${PASSWORD}" | tee -a ~/.bashrc -a ~/.zshrc
 echo export GITLAB_USER="${USERNAME}" | tee -a ~/.bashrc -a ~/.zshrc
 echo export GITLAB_PASSWORD="${PASSWORD}" | tee -a ~/.bashrc -a ~/.zshrc
+echo export OCP_CONSOLE=https://console-openshift-console.apps.ocp4.example.com | tee -a ~/.bashrc -a ~/.zshrc
 
 source ~/.bashrc
 echo ${TEAM_NAME}
@@ -127,6 +128,7 @@ helm upgrade --install argocd \
 sleep 60
 oc get pods -n ${TEAM_NAME}-ci-cd
 ARGO_URL=$( echo https://$(oc get route argocd-server --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd ))
+echo export ARGO_URL="${ARGO_URL}" | tee -a ~/.bashrc -a ~/.zshrc
 
 echo "==> Log to ${ARGO_URL} and perform manual steps 6), 7), 8), 9) and 10)"
 read -p "Press [Enter] when done to continue..."
@@ -144,6 +146,7 @@ read -p "Press [Enter] when done to continue..."
 
 source ~/.bashrc
 GITLAB_PAT=$(gitlab_pat)
+echo export GITLAB_PAT="${GITLAB_PAT}" | tee -a ~/.bashrc -a ~/.zshrc
 echo "GITLAB_USER: ${GITLAB_USER}"
 echo "GITLAB_PAT:  ${GITLAB_PAT}"
 
@@ -214,11 +217,10 @@ git push
 echo "==> Log to ${ARGO_URL} and verify that ubiquitous-journey app has deployed a nexus server. We patient, can take up to 5-10min."
 read -p "Press [Enter] when done to continue..."
 
-
 NEXUS_URL=$(echo https://$(oc get route nexus --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd))
+echo export NEXUS_URL="${NEXUS_URL}" | tee -a ~/.bashrc -a ~/.zshrc
 echo "==> Log to ${NEXUS_URL}. See credentials on step 4)"
 read -p "Press [Enter] when done to continue..."
-
 
 echo
 echo "###########################################"
@@ -318,6 +320,7 @@ echo "==> Log to https://${ARGO_URL} and verify SealedSecret chart. Drill into t
 read -p "Press [Enter] when done to continue..."
 
 JENKINS_URL=$(echo https://$(oc get route jenkins --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd))
+echo export JENKINS_URL="${JENKINS_URL}" | tee -a ~/.bashrc -a ~/.zshrc
 echo "==> Log to ${JENKINS_URL}. Verify Jenkins synced Jenkins -> Manage Jenkins -> Manage Credentials to view <TEAM_NAME>-ci-cd-git-auth"
 read -p "Press [Enter] when done to continue..."
 
@@ -498,3 +501,56 @@ git push
 echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project. Also, use the tkn command line to observe PipelineRun logs as well: 'tkn -n ${TEAM_NAME}-ci-cd pr logs -Lf'"
 read -p "Press [Enter] when done to continue..."
 
+echo
+echo "##########################################################"
+echo "### The Revenge of the Automated Testing -> Sonarqube  ###"
+echo "##########################################################"
+echo
+
+cat << EOF > /tmp/sonarqube-auth.yaml
+apiVersion: v1
+data:
+  username: "$(echo -n admin | base64 -w0)"
+  password: "$(echo -n admin123 | base64 -w0)"
+  currentAdminPassword: "$(echo -n admin | base64 -w0)"
+kind: Secret
+metadata:
+  labels:
+    credential.sync.jenkins.openshift.io: "true"
+  name: sonarqube-auth
+EOF
+
+kubeseal < /tmp/sonarqube-auth.yaml > /tmp/sealed-sonarqube-auth.yaml \
+    -n ${TEAM_NAME}-ci-cd \
+    --controller-namespace tl500-shared \
+    --controller-name sealed-secrets \
+    -o yaml
+
+cat /tmp/sealed-sonarqube-auth.yaml| grep -E 'username|password|currentAdminPassword'
+
+echo "==> Perform step 3) in your IDE using the previous output ^^"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add ubiquitous-journey/values-tooling.yaml
+git commit -m  "ADD - sonarqube creds sealed secret"
+git push
+
+sleep 30; oc get secrets -n <TEAM_NAME>-ci-cd | grep sonarqube-auth
+
+echo "==> Perform step 5) in your IDE using the previous output ^^"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - sonarqube"
+git push
+
+echo "==> Log to https://${ARGO_URL} and verify that sonarqube is deployed."
+read -p "Press [Enter] when done to continue..." 
+
+SONAR_URL=$(echo https://$(oc get route sonarqube --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd))
+echo export SONAR_URL="${SONAR_URL}" | tee -a ~/.bashrc -a ~/.zshrc
+
+echo "==> Log to https://${SONAR_URL} and verify installation is successful (admin/admin123)."
+read -p "Press [Enter] when done to continue..."
