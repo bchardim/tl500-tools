@@ -130,7 +130,7 @@ oc get pods -n ${TEAM_NAME}-ci-cd
 ARGO_URL=$( echo https://$(oc get route argocd-server --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd ))
 echo export ARGO_URL="${ARGO_URL}" | tee -a ~/.bashrc -a ~/.zshrc
 
-echo "==> Log to ${ARGO_URL} and perform manual steps 6), 7), 8), 9) and 10)"
+echo "==> Log to ${ARGO_URL} and perform manual steps 6), 7), 8), 9) and 10) [Repository URL: https://rht-labs.com/todolist]"
 read -p "Press [Enter] when done to continue..."
 
 echo https://$(oc get route/our-todolist -n ${TEAM_NAME}-ci-cd --template='{{.spec.host}}')
@@ -141,7 +141,7 @@ echo "### The Manual Menace -> Ubiquitous Journey ###"
 echo "###############################################"
 echo
 
-echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1), 2), 3), 4) and 5)"
+echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1), 2), 3), 4) and 5) [zteam,public tech-exercise,internal]"
 read -p "Press [Enter] when done to continue..."
 
 source ~/.bashrc
