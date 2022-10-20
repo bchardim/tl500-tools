@@ -1319,10 +1319,254 @@ echo
 cd /tmp
 cosign generate-key-pair k8s://${TEAM_NAME}-ci-cd/${TEAM_NAME}-cosign
 
-
 echo
 echo "#########################################################################"
 echo "### The Revenge of the Automated Testing -> Image Signing -> Jenkins  ###"
 echo "#########################################################################"
 echo
+
+echo "==> Perform step 1) Edit /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml to add jenkins-agent-cosign."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add ubiquitous-journey/values-tooling.yaml
+git commit -m  "ADD - Cosign Jenkins Agent"
+git push
+
+echo "==> Perform step 2) Edit /projects/pet-battle/Jenkinsfile to add cosign step at //IMAGE SIGN EXAMPLE GOES HERE."
+read -p "Press [Enter] when done to continue..."
+
+cp /tmp/cosign.pub /projects/pet-battle/
+cd /projects/pet-battle
+git add cosign.pub Jenkinsfile
+git commit -m  "ADD - cosign public key for image verification and Jenkinsfile updated"
+git push
+
+echo "==> Log to ${JENKINS_URL}. Observe the pet-battle pipeline running with the image-sign stage. (Blue Ocean)"
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Log to ${OCP_CONSOLE}. Builds > ImageStreams inside <TEAM_NAME>-test namespace and select pet-battle. See a tag ending with .sig which shows you that this is image signed."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle
+oc registry login $(oc registry info) --insecure=true
+cosign verify --key k8s://${TEAM_NAME}-ci-cd/${TEAM_NAME}-cosign default-route-openshift-image-registry.${CLUSTER_DOMAIN}/${TEAM_NAME}-test/pet-battle:1.2.0
+
+echo
+echo "########################################################################"
+echo "### The Revenge of the Automated Testing -> Image Signing -> Tekton  ###"
+echo "########################################################################"
+echo
+
+cd /projects/tech-exercise
+cat <<'EOF' > tekton/templates/tasks/image-signing.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: image-signing
+spec:
+  workspaces:
+    - name: output
+  params:
+    - name: APPLICATION_NAME
+      description: Name of the application
+      type: string
+    - name: TEAM_NAME
+      description: Name of the team that doing this exercise :)
+      type: string
+    - name: VERSION
+      description: Version of the application
+      type: string
+    - name: COSIGN_VERSION
+      type: string
+      description: Version of cosign CLI
+      default: 1.0.0
+    - name: WORK_DIRECTORY
+      description: Directory to start build in (handle multiple branches)
+      type: string
+  steps:
+    - name: image-signing
+      image: quay.io/openshift/origin-cli:4.9
+      workingDir: $(workspaces.output.path)/$(params.WORK_DIRECTORY)
+      script: |
+        #!/usr/bin/env bash
+        curl -skL -o /tmp/cosign https://github.com/sigstore/cosign/releases/download/v$(params.COSIGN_VERSION)/cosign-linux-amd64
+        chmod -R 775 /tmp/cosign
+
+        oc registry login
+        /tmp/cosign sign -key k8s://$(params.TEAM_NAME)-ci-cd/$(params.TEAM_NAME)-cosign `oc registry info`/$(params.TEAM_NAME)-test/$(params.APPLICATION_NAME):$(params.VERSION)
+EOF
+
+echo "==> Perform step 2) Edit /projects/tech-exercise/tekton/templates/pipeline/maven-pipeline.yaml to add image-sign step. //Cosign Image Sign"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - image-signing-task"
+git push
+
+cp /tmp/cosign.pub /projects/pet-battle-api/
+cd /projects/pet-battle-api
+git add cosign.pub
+git commit -m  "ADD - cosign public key for image verification"
+git push
+
+echo "==> Log to ${OCP_CONSOLE} .Observe the pet-battle-api pipeline running with the image-sign task."
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Log to ${OCP_CONSOLE}. Builds > ImageStreams inside <TEAM_NAME>-test namespace and select pet-battle-api. See a tag ending with .sig which shows you that this is image signed."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle-api
+oc registry login $(oc registry info) --insecure=true
+cosign verify --key k8s://${TEAM_NAME}-ci-cd/${TEAM_NAME}-cosign default-route-openshift-image-registry.${CLUSTER_DOMAIN}/${TEAM_NAME}-test/pet-battle-api:1.3.1
+
+echo
+echo "########################################################################"
+echo "### The Revenge of the Automated Testing -> Load Testing -> Jenkins  ###"
+echo "########################################################################"
+echo
+
+echo "==> Perform step 1) Edit /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml to add jenkins-agent-python."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add ubiquitous-journey/values-tooling.yaml
+git commit -m  "ADD - Python Jenkins Agent"
+git push
+
+cat << EOF > /projects/pet-battle/locustfile.py
+
+import logging
+from locust import HttpUser, task, events
+
+class getCat(HttpUser):
+  @task
+  def cat(self):
+      self.client.get("/home")
+
+@events.quitting.add_listener
+def _(environment, **kw):
+  if environment.stats.total.fail_ratio > 0.01:
+      logging.error("Test failed due to failure ratio > 1%")
+      environment.process_exit_code = 1
+  elif environment.stats.total.avg_response_time > 200:
+      logging.error("Test failed due to average response time ratio > 200 ms")
+      environment.process_exit_code = 1
+  elif environment.stats.total.get_response_time_percentile(0.95) > 800:
+      logging.error("Test failed due to 95th percentile response time > 800 ms")
+      environment.process_exit_code = 1
+  else:
+      environment.process_exit_code = 0
+EOF
+
+echo "==> Perform step 3) Edit /projects/pet-battle/Jenkinsfile to add load-test step at //LOAD TESTING EXAMPLE GOES HERE."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle
+git add Jenkinsfile locustfile.py
+git commit -m  "ADD - load testing stage and locustfile"
+git push
+
+echo "==> Log to ${JENKINS_URL}. Obeserve the pet-battle pipeline running with the load testing stage, (Blue Ocean). If the pipeline fails due to the thresh-holds we set, you can always adjust it by updating the locustfile.py with higher values."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "#######################################################################"
+echo "### The Revenge of the Automated Testing -> Load Testing -> Tekton  ###"
+echo "#######################################################################"
+echo
+
+cat << EOF > /projects/pet-battle-api/locustfile.py
+
+import logging
+from locust import HttpUser, task, events
+
+class getCat(HttpUser):
+  @task
+  def cat(self):
+      self.client.get("/cats")
+
+@events.quitting.add_listener
+def _(environment, **kw):
+  if environment.stats.total.fail_ratio > 0.01:
+      logging.error("Test failed due to failure ratio > 1%")
+      environment.process_exit_code = 1
+  elif environment.stats.total.avg_response_time > 200:
+      logging.error("Test failed due to average response time ratio > 200 ms")
+      environment.process_exit_code = 1
+  elif environment.stats.total.get_response_time_percentile(0.95) > 800:
+      logging.error("Test failed due to 95th percentile response time > 800 ms")
+      environment.process_exit_code = 1
+  else:
+      environment.process_exit_code = 0
+
+EOF
+
+cd /projects/tech-exercise
+cat <<'EOF' > tekton/templates/tasks/load-testing.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: load-testing
+spec:
+  workspaces:
+    - name: output
+  params:
+    - name: APPLICATION_NAME
+      description: Name of the application
+      type: string
+    - name: TEAM_NAME
+      description: Name of the team that doing this exercise :)
+      type: string
+    - name: WORK_DIRECTORY
+      description: Directory to start build in (handle multiple branches)
+      type: string
+  steps:
+    - name: load-testing
+      image: quay.io/centos7/python-38-centos7:latest
+      workingDir: $(workspaces.output.path)/$(params.WORK_DIRECTORY)
+      script: |
+        #!/usr/bin/env bash
+        pip3 install locust
+        locust --headless --users 10 --spawn-rate 1 -H https://$(params.APPLICATION_NAME)-$(params.TEAM_NAME)-test.{{ .Values.cluster_domain }} --run-time 1m --loglevel INFO --only-summary 
+EOF
+
+echo "==> Perform step 3) Edit /projects/tech-exercise/tekton/templates/pipeline/maven-pipeline.yaml to add load-test step. //Load Testing"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise/tekton
+git add .
+git commit -m  "ADD - load testing task"
+git push
+
+cd /projects/pet-battle-api
+git add locustfile.py
+git commit -m  "ADD - locustfile for load testing"
+git push
+
+echo "==> Log to ${OCP_CONSOLE} . Observe the pet-battle-api pipeline running with the load-testing task. If the pipeline fails due to the tresholds we set, you can always adjust it by updating the locustfile.py with higher values."
+read -p "Press [Enter] when done to continue..."
+
+
+echo
+echo "#######################################################################"
+echo "### The Revenge of the Automated Testing -> System Test -> Jenkins  ###"
+echo "#######################################################################"
+echo
+
+echo "==> XXX No instructions here? XXX."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "######################################################################"
+echo "### The Revenge of the Automated Testing -> System Test -> Tekton  ###"
+echo "######################################################################"
+echo
+
+echo "==> XXX No instructions here? XXX."
+read -p "Press [Enter] when done to continue..."
+
+
+
 
