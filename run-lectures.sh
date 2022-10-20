@@ -447,7 +447,7 @@ read -p "Press [Enter] when done to continue..."
 wget -O /projects/pet-battle/Jenkinsfile https://raw.githubusercontent.com/rht-labs/tech-exercise/main/tests/doc-regression-test-files/3a-jenkins-Jenkinsfile.groovy
 
 
-echo "==> HOTFIX TBR - Execute and add?  sh 'git config --global http.sslVerify false' on jenkins pod / /projects/pet-battle/Jenkinsfile "
+echo "==> HOTFIX TBR - Install skip-certificate-check and execute 'git config --global http.sslVerify false' on jenkins pod /projects/pet-battle/Jenkinsfile "
 read -p "Press [Enter] when done to continue..."
 
 
@@ -537,7 +537,7 @@ kubeseal < /tmp/sonarqube-auth.yaml > /tmp/sealed-sonarqube-auth.yaml \
 
 cat /tmp/sealed-sonarqube-auth.yaml| grep -E 'username|password|currentAdminPassword'
 
-echo "==> Perform step 3) in your IDE using the previous output ^^"
+echo "==> Perform step 3) in your IDE using the previous output ^^ /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml"
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/tech-exercise
@@ -547,7 +547,7 @@ git push
 
 sleep 30; oc get secrets -n ${TEAM_NAME}-ci-cd | grep sonarqube-auth
 
-echo "==> Perform steps 3), 4), and  5) in your IDE using the previous output ^^"
+echo "==> Perform step 5) in your IDE /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml"
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/tech-exercise
@@ -596,7 +596,7 @@ scanner(
 );
 EOF
 
-echo "==> Perform step 2) and 3) in your IDE using /projects/pet-battle/Jenkinsfile"
+echo "==> Perform step 2) SONARQUBE_CREDS and 3) in your IDE using /projects/pet-battle/Jenkinsfile"
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/pet-battle
@@ -613,5 +613,716 @@ echo "### The Revenge of the Automated Testing -> Sonarqube -> Tekton   ###"
 echo "#####################################################################"
 echo
 
+echo "==> Perform step 1) Add code-analysis step to our Pipeline. Edit /projects/tech-exercise/tekton/templates/pipelines/maven-pipeline.yaml file, add this step before the maven build step."
+read -p "Press [Enter] when done to continue..."
 
+echo "==> Perform step 2) Edit /projects/tech-exercise/tekton/templates/triggers/gitlab-trigger-template.yaml file, add this code to the end of the workspaces list where the # sonarqube-auth placeholder is."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+cat <<'EOF' >> tekton/templates/tasks/sonarqube-quality-gate-check.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: sonarqube-quality-gate-check
+spec:
+  description: >-
+    This Task can be used to check sonarqube quality gate
+  workspaces:
+    - name: output
+    - name: sonarqube-auth
+      optional: true
+  params:
+    - name: WORK_DIRECTORY
+      description: Directory to start build in (handle multiple branches)
+      type: string
+    - name: IMAGE
+      description: the image to use
+      type: string
+      default: "quay.io/eformat/openshift-helm:latest"
+  steps:
+  - name: check
+    image: $(params.IMAGE)
+    script: |
+      #!/bin/sh
+      test -f $(workspaces.sonarqube-auth.path) || export SONAR_USER="$(cat $(workspaces.sonarqube-auth.path)/username):$(cat $(workspaces.sonarqube-auth.path)/password)"
+  
+      cd $(workspaces.output.path)/$(params.WORK_DIRECTORY)
+      TASKFILE=$(find . -type f -name report-task.txt)
+      if [ -z ${TASKFILE} ]; then
+        echo "Task File not found"
+        exit 1
+      fi
+      echo ${TASKFILE}
+
+      TASKURL=$(cat ${TASKFILE} | grep ceTaskUrl)
+      TURL=${TASKURL##ceTaskUrl=}
+      if [ -z ${TURL} ]; then
+        echo "Task URL not found"
+        exit 1
+      fi
+      echo ${TURL}
+
+      AID=$(curl -u ${SONAR_USER} -s $TURL | jq -r .task.analysisId)
+      if [ -z ${AID} ]; then
+        echo "Analysis ID not found"
+        exit 1
+      fi
+      echo ${AID}
+
+      SERVERURL=$(cat ${TASKFILE} | grep serverUrl)
+      SURL=${SERVERURL##serverUrl=}
+      if [ -z ${SURL} ]; then
+        echo "Server URL not found"
+        exit 1
+      fi
+      echo ${SURL}
+
+      BUILDSTATUS=$(curl -u ${SONAR_USER} -s $SURL/api/qualitygates/project_status?analysisId=${AID} | jq -r .projectStatus.status)
+      if [ "${BUILDSTATUS}" != "OK" ]; then
+        echo "Failed Quality Gate - please check - $SURL/api/qualitygates/project_status?analysisId=${AID}"
+        exit 1
+      fi
+
+      echo "Quality Gate Passed OK - $SURL/api/qualitygates/project_status?analysisId=${AID}"
+      exit 0
+EOF
+
+echo "==> Perform step 4) Edit /projects/tech-exercise/tekton/templates/pipelines/maven-pipeline.yaml file and add the code-analysis-check step to our pipeline as shown below."
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Perform step 5) Edit /projects/tech-exercise/tekton/templates/pipelines/maven-pipeline.yaml file to adjust the maven build step’s runAfter to be analysis-check so the static analysis steps happen before we even compile the app."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - code-analysis & check steps"
+git push
+
+cd /projects/pet-battle-api
+git commit --allow-empty -m "TEST - running code analysis steps"
+git push
+
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project. Wait until it finish'"
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Log to ${SONAR_URL} and verify and inspect the results in Sonarqube UI - pet-battle-api."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "###################################################################"
+echo "### The Revenge of the Automated Testing -> Testing -> Jenkins  ###"
+echo "###################################################################"
+echo
+
+echo "==> Perform step 2) Edit /projects/pet-battle/Jenkinsfile file to extend the pipeline where //Jest Testing placeholder is."
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Perform step 3) Edit /projects/pet-battle/Jenkinsfile file to add these post steps to the pipeline by the //Post steps go here placeholder."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle
+git add .
+git commit -m "ADD - save test results"
+git push
+
+echo "==> Log to ${JENKINS_URL}. Run twice pet-battle -> main job and see the test resunts under 'Web Code Coverage'"
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "##################################################################"
+echo "### The Revenge of the Automated Testing -> Testing -> Tekton  ###"
+echo "##################################################################"
+echo
+
+cat << EOF > /tmp/allure-auth.yaml
+apiVersion: v1
+data:
+  password: "$(echo -n password | base64 -w0)"
+  username: "$(echo -n admin | base64 -w0)"
+kind: Secret
+metadata:
+  name: allure-auth
+EOF
+
+kubeseal < /tmp/allure-auth.yaml > /tmp/sealed-allure-auth.yaml \
+    -n ${TEAM_NAME}-ci-cd \
+    --controller-namespace tl500-shared \
+    --controller-name sealed-secrets \
+    -o yaml
+
+cat /tmp/sealed-allure-auth.yaml| grep -E 'username|password'
+
+echo "==> Perform step 4), 5) in your IDE using the previous output ^^ /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add ubiquitous-journey/values-tooling.yaml
+git commit -m  "ADD - Allure tooling"
+git push
+
+ALURE_URL=$(echo https://$(oc get route allure --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd)/allure-docker-service/projects/default/reports/latest/index.html)
+
+echo "==> Log to ${ALURE_URL} and verify installation is successful (admin/password)."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+cat <<'EOF' > tekton/templates/tasks/allure-post-report.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: allure-post-report
+  labels:
+    app.kubernetes.io/version: "0.2"
+spec:
+  description: >-
+    This task used for uploading test reports to allure
+  workspaces:
+    - name: output
+  params:
+    - name: APPLICATION_NAME
+      type: string
+      default: ""
+    - name: IMAGE
+      description: the image to use to upload results
+      type: string
+      default: "quay.io/openshift/origin-cli:4.9"
+    - name: WORK_DIRECTORY
+      description: Directory to start build in (handle multiple branches)
+      type: string
+    - name: ALLURE_HOST
+      description: "Allure Host"
+      default: "http://allure:5050"
+    - name: ALLURE_SECRET
+      type: string
+      description: Secret containing Allure credentials
+      default: allure-auth
+  steps:
+    - name: save-tests
+      image: $(params.IMAGE)
+      workingDir: $(workspaces.output.path)/$(params.WORK_DIRECTORY)
+      env:
+        - name: ALLURE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ALLURE_SECRET)
+              key: username
+        - name: ALLURE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ALLURE_SECRET)
+              key: password
+      script: |
+        #!/bin/bash
+        curl -sLo send_results.sh https://raw.githubusercontent.com/eformat/allure/main/scripts/send_results.sh && chmod 755 send_results.sh
+        ./send_results.sh $(params.APPLICATION_NAME) \
+          $(workspaces.output.path)/$(params.WORK_DIRECTORY) \
+          ${ALLURE_USERNAME} \
+          ${ALLURE_PASSWORD} \
+          $(params.ALLURE_HOST)
+EOF
+
+echo "==> Perform step 2) Edit /projects/tech-exercise/tekton/templates/pipelines/maven-pipeline.yaml file and add the save-test-results step to the pipeline."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - save-test-results step"
+git push
+
+cd /projects/pet-battle-api
+git commit --allow-empty -m "test save-test-results step"
+git push
+
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx -> Details'"
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Log to ${ALURE_URL} to browse to the uploaded test results from the pipeline in Allure. Test results + behaviours."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "########################################################################"
+echo "### The Revenge of the Automated Testing -> Code Linting -> Jenkins  ###"
+echo "########################################################################"
+echo
+
+echo "==> Perform step 4) Edit /projects/pet-battle/Jenkinsfile file to extend extend the stage{ "Build" } of the Jenkinsfile with the lint task. //Lint exercise here."
+read -p "Press [Enter] when done to continue..."
+
+git add .
+git commit -m "ADD - linting to the pipeline"
+git push
+
+echo "==> Log to ${JENKINS_URL}. See new build triggered and the linter running as part of it."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "#######################################################################"
+echo "### The Revenge of the Automated Testing -> Code Linting -> Tekton  ###"
+echo "#######################################################################"
+echo
+
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx. The Code Linting is done at the 'mvn test' step'."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "########################################################################"
+echo "### The Revenge of the Automated Testing -> Kube Linting -> Jenkins  ###"
+echo "########################################################################"
+echo
+
+echo "==> Perform step 1) Edit /projects/pet-battle/Jenkinsfile file to add the code snippet stage("Deploy - Helm Package"). //Kube-linter step."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle
+git add Jenkinsfile
+git commit -m  "ADD - kube-linter step"
+git push
+
+echo "==> Log to ${JENKINS_URL}. See new build triggered and the kube linter running as part of it. See 'Error: found 1 lint errors'. Lets fix it."
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Perform step 3) Edit /projects/pet-battle/chart/templates/deploymentconfig.yaml to fix ^^ previous error. Also bump Chart.yaml"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle
+kube-linter lint chart --do-not-auto-add-defaults --include no-extensions-v1beta,no-readiness-probe,no-liveness-probe,dangling-service,mismatching-selector,writable-host-mount
+
+cd /projects/pet-battle
+git add .
+git commit -m  "ADD - Liveliness probe"
+git push
+
+echo "==> Log to ${JENKINS_URL}. See new build triggered and the kube linter running as part of it. The prevous error has gone."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "#######################################################################"
+echo "### The Revenge of the Automated Testing -> Kube Linting -> Tekton  ###"
+echo "#######################################################################"
+echo
+
+curl -sLo /projects/tech-exercise/tekton/templates/tasks/kube-linter.yaml \
+https://raw.githubusercontent.com/tektoncd/catalog/main/task/kube-linter/0.1/kube-linter.yaml
+
+cd /projects/tech-exercise
+git add .
+git commit -m  " ADD - kube-linter task"
+git push
+
+echo "==> Perform step 2) Edit /projects/tech-exercise/tekton/templates/pipelines/maven-pipeline.yaml file to add kube-linter task."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - kube-linter checks"
+git push
+
+cd /projects/pet-battle-api
+git commit --allow-empty -m "test kube-linter step"
+git push
+
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx -> Details. See the kube-linter step'."
+read -p "Press [Enter] when done to continue..."
+
+
+echo "==> Perform step Breaking the Build 1) Edit /projects/tech-exercise/tekton/templates/pipelines/maven-pipeline.yaml file to add required-label-owner to the includelist list on the kube-linter task."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - kube-linter required-label-owner check"
+git push
+
+cd /projects/pet-battle-api
+git commit --allow-empty -m "test required-label-owner check"
+git push
+
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx -> Details. 'Wait for the pipeline to sync and trigger a pet-battle-api build. This should now fail."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle-api
+kube-linter lint chart --do-not-auto-add-defaults --include no-extensions-v1beta,no-readiness-probe,no-liveness-probe,dangling-service,mismatching-selector,writable-host-mount,required-label-owner
+
+echo "==> Perform step Breaking the Build 5), and 6) to fix the previous issue ^^."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle-api
+mvn -ntp versions:set -DnewVersion=1.3.1
+
+cd /projects/pet-battle-api
+git add .
+git commit -m  "ADD - kube-linter owner labels"
+git push
+
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx -> Details. This should now NOT fail."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "############################################################################################"
+echo "### The Revenge of the Automated Testing -> OWASP ZAP Vulnerability Scanning -> Jenkins  ###"
+echo "############################################################################################"
+echo
+
+echo "==> Perform step 1) Edit /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml to add jenkins-agent-zap."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add ubiquitous-journey/values-tooling.yaml
+git commit -m  "ADD - Zap Jenkins Agent"
+git push
+
+echo "==> Perform step 2) Edit /projects/pet-battle/Jenkinsfile to add ZAP scanning step below stage where //OWASP ZAP STAGE GOES HERE."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle
+git add Jenkinsfile
+git commit -m  "ADD - OWASP ZAP scanning"
+git push
+
+echo "==> Log to ${JENKINS_URL}. On the left hand side, see 'OWASP Zed Attack Proxy' for test results."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "###########################################################################################"
+echo "### The Revenge of the Automated Testing -> OWASP ZAP Vulnerability Scanning -> Tekton  ###"
+echo "###########################################################################################"
+echo
+
+cd /projects/tech-exercise
+cat <<'EOF' > tekton/templates/tasks/zap-proxy.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: zap-proxy
+spec:
+  workspaces:
+    - name: output
+  params:
+    - name: APPLICATION_NAME
+      type: string
+      default: "zap-scan"
+    - name: APP_URL
+      description: The application under test url
+    - name: ALLURE_HOST
+      type: string
+      description: "Allure Host"
+      default: "http://allure:5050"
+    - name: ALLURE_SECRET
+      type: string
+      description: Secret containing Allure credentials
+      default: allure-auth
+    - name: WORK_DIRECTORY
+      description: Directory to start build in (handle multiple branches)
+  steps:
+    - name: zap-proxy
+      image: quay.io/rht-labs/zap2docker-stable:latest
+      env:
+        - name: PIPELINERUN_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tekton.dev/pipelineRun']
+        - name: ALLURE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ALLURE_SECRET)
+              key: username
+        - name: ALLURE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ALLURE_SECRET)
+              key: password
+      workingDir: $(workspaces.output.path)/$(params.WORK_DIRECTORY)
+      script: |
+        #!/usr/bin/env bash
+        set -x
+        echo "Make the wrk directory available to save the reports"
+        cd /zap
+        mkdir -p /zap/wrk
+        echo "🪰🪰🪰 Starting the pen test..."
+        /zap/zap-baseline.py -t $(params.APP_URL) -r $PIPELINERUN_NAME.html
+        ls -lart /zap/wrk
+        echo "🛸🛸🛸 Saving results..."
+        # FIXME for now this works, move to script+image
+        pip install pytest allure-pytest --user
+        cat > test.py <<EOF
+        import allure
+        import glob
+        import os
+        def test_zap_scan_results():
+            for file in list(glob.glob('/zap/wrk/*.html')):
+                allure.attach.file(file, attachment_type=allure.attachment_type.HTML)
+            pass
+        EOF
+        export PATH=$HOME/.local/bin:$PATH
+        pytest test.py --alluredir=/zap/wrk/allure-results
+        curl -sLo send_results.sh https://raw.githubusercontent.com/eformat/allure/main/scripts/send_results.sh && chmod 755 send_results.sh
+        ./send_results.sh $(params.APPLICATION_NAME) \
+        /zap \
+        ${ALLURE_USERNAME} \
+        ${ALLURE_PASSWORD} \
+        $(params.ALLURE_HOST) \
+        wrk/allure-results
+EOF
+
+echo "==> Perform step 2) Edit /projects/tech-exercise/tekton/templates/pipeline/maven-pipeline.yaml to add pentesting-test step."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - zap scan pentest"
+git push
+
+cd /projects/pet-battle-api
+git commit --allow-empty -m "test zap-scan step"
+git push
+
+echo "==> Log to ${ALURE_URL} and see Suites -> ZAP Scan Report."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "################################################################################"
+echo "### The Revenge of the Automated Testing -> Image Security -> StackRox (ACS) ###"
+echo "################################################################################"
+echo
+
+ROX_URL=$(echo https://$(oc -n stackrox get route central --template='{{ .spec.host }}'))
+ROX_PSS=$(echo $(oc -n stackrox get secret central-htpasswd -o go-template='{{index .data "password" | base64decode}}'))
+
+echo "==> Log to ${ROX_URL}. Use admin / ${ROX_PSS}."
+read -p "Press [Enter] when done to continue..."
+
+export ROX_API_TOKEN=$(oc -n stackrox get secret rox-api-token-tl500 -o go-template='{{index .data "token" | base64decode}}')
+echo export ROX_API_TOKEN="${ROX_API_TOKEN}" | tee -a ~/.bashrc -a ~/.zshrc
+
+export ROX_ENDPOINT=central-stackrox.${CLUSTER_DOMAIN}
+echo export ROX_ENDPOINT="${ROX_ENDPOINT}" | tee -a ~/.bashrc -a ~/.zshrc
+
+roxctl central whoami --insecure-skip-tls-verify -e $ROX_ENDPOINT:443
+
+cat << EOF > /tmp/rox-auth.yaml
+apiVersion: v1
+data:
+  password: "$(echo -n ${ROX_API_TOKEN} | base64 -w0)"
+  username: "$(echo -n ${ROX_ENDPOINT} | base64 -w0)"
+kind: Secret
+metadata:
+  labels:
+    credential.sync.jenkins.openshift.io: "true"
+  name: rox-auth
+EOF
+
+kubeseal < /tmp/rox-auth.yaml > /tmp/sealed-rox-auth.yaml \
+    -n ${TEAM_NAME}-ci-cd \
+    --controller-namespace tl500-shared \
+    --controller-name sealed-secrets \
+    -o yaml
+
+cat /tmp/sealed-rox-auth.yaml | grep -E 'username|password'
+
+echo "==> Perform step 4) Edit /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml to add Sealed Secrets entry. Copy the output of username and password from the previous command and update the values."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - stackrox sealed secret"
+git push
+
+echo "==> Log to ${ROX_URL}. Use admin / ${ROX_PSS}. Perform 5), 6), 7), 8), 9), and 10)"
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "##########################################################################"
+echo "### The Revenge of the Automated Testing -> Image Security -> Jenkins  ###"
+echo "##########################################################################"
+echo
+
+echo "==> Perform step 1) ROX_CREDS using /projects/pet-battle/Jenkinsfile"
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Perform step 2) Add image scanning stage on /projects/pet-battle/Jenkinsfile at //IMAGE SCANNING"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle
+git add .
+git commit -m  "ADD - image scan stage"
+git push 
+
+echo "==> Log to ${JENKINS_URL}. See pet-battle pipeline running with the image-scan stag."
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Perform step Check Build/Deploy Time Violations 1) extend /projects/pet-battle/Jenkinsfile at //BUILD & DEPLOY CHECKS"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle
+git add .
+git commit -m  "ADD - image scan stage"
+git push
+
+echo "==> Log to ${JENKINS_URL}. observer the pet-battle pipeline, check the logs for image scanning stage and detects some violations for deploy.(Blue Ocean)"
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Log to ${ROX_URL}. See Violations"
+read -p "Press [Enter] when done to continue..."
+
+echo "==> TODO - Add the violation fix from Dragons"
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "#########################################################################"
+echo "### The Revenge of the Automated Testing -> Image Security -> Tekton  ###"
+echo "#########################################################################"
+echo
+
+cd /projects/tech-exercise
+cat <<'EOF' > tekton/templates/tasks/rox-image-scan.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: rox-image-scan
+spec:
+  workspaces:
+    - name: output
+  params:
+    - name: ROX_SECRET
+      type: string
+      description: Secret containing the Stackrox endpoint and token as (username and password)
+      default: rox-auth
+    - name: IMAGE
+      type: string
+      description: Full name of image to scan (example -- gcr.io/rox/sample:5.0-rc1)
+    - name: OUTPUT_FORMAT
+      type: string
+      description:  Output format (json | csv | table)
+      default: json
+    - name: WORK_DIRECTORY
+      description: Directory to start build in (handle multiple branches)
+  steps:
+    - name: rox-image-scan
+      image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+      workingDir: $(workspaces.output.path)/$(params.WORK_DIRECTORY)
+      env:
+        - name: ROX_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ROX_SECRET)
+              key: password
+        - name: ROX_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ROX_SECRET)
+              key: username
+      script: |
+        #!/usr/bin/env bash
+        set +x
+        export NO_COLOR="True"
+        curl -k -L -H "Authorization: Bearer $ROX_API_TOKEN" https://$ROX_ENDPOINT/api/cli/download/roxctl-linux --output roxctl  > /dev/null; echo "Getting roxctl"
+        chmod +x roxctl > /dev/null
+        ./roxctl image scan --insecure-skip-tls-verify -e $ROX_ENDPOINT:443 --image $(params.IMAGE) -o $(params.OUTPUT_FORMAT)
+EOF
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - rox-image-scan-task"
+git push 
+
+echo "==> Perform step 3) Edit /projects/tech-exercise/tekton/templates/pipeline/maven-pipeline.yaml to add image-scan step."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - image-scan step to pipeline"
+git push
+
+cd /projects/pet-battle-api
+git commit --allow-empty -m "test image-scan step"
+git push
+
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx -> Details. See the image-scan task."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+cat <<'EOF' >> tekton/templates/tasks/rox-image-scan.yaml
+    - name: rox-image-check
+      image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+      workingDir: $(workspaces.output.path)/$(params.WORK_DIRECTORY)
+      env:
+        - name: ROX_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ROX_SECRET)
+              key: password
+        - name: ROX_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ROX_SECRET)
+              key: username
+      script: |
+        #!/usr/bin/env bash
+        set +x
+        export NO_COLOR="True"
+        curl -k -L -H "Authorization: Bearer $ROX_API_TOKEN" https://$ROX_ENDPOINT/api/cli/download/roxctl-linux --output roxctl  > /dev/null;echo "Getting roxctl"
+        chmod +x roxctl > /dev/null
+        ./roxctl image check --insecure-skip-tls-verify -e $ROX_ENDPOINT:443 --image $(params.IMAGE) -o json
+        if [ $? -eq 0 ]; then
+          echo "🦕 no issues found 🦕";
+          exit 0;
+        else
+          echo "🛑 image checks failed 🛑";
+          exit 1;
+        fi
+EOF
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - rox-image-check-task"
+git push
+
+cd /projects/pet-battle-api
+git commit --allow-empty -m "test image-check step"
+git push
+
+echo "==> Log to ${OCP_CONSOLE} .Observe the pet-battle-api pipeline running with the image-scan task."
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Perform step Breaking the Build  1) and 2) edit pet-battle-api/Dockerfile.jvm"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle-api
+git add .
+git commit -m  "Expose port 22"
+git push
+
+echo "==> Log to ${OCP_CONSOLE} .Observe the pet-battle-api pipeline running with the image-scan task. The run will fail on image-scan step due to :22 violation"
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Log to ${ROX_URL}. Back in ACS we can also see the failure in the Violations view"
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Perform step Breaking the Build 6) edit pet-battle-api/Dockerfile.jvm to remove :22 and fix the issue"
+read -p "Press [Enter] when done to continue..."
+
+cd /project/pet-battle-api
+git add .
+git commit -m  "FIX - Security violation, remove port 22 exposure"
+git push
+
+echo "==> Log to ${OCP_CONSOLE} .Observe the pet-battle-api pipeline running successfully again."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "##############################################################"
+echo "### The Revenge of the Automated Testing -> Image Signing  ###"
+echo "##############################################################"
+echo
+
+cd /tmp
+cosign generate-key-pair k8s://${TEAM_NAME}-ci-cd/${TEAM_NAME}-cosign
+
+
+echo
+echo "#########################################################################"
+echo "### The Revenge of the Automated Testing -> Image Signing -> Jenkins  ###"
+echo "#########################################################################"
+echo
 
