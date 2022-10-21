@@ -201,7 +201,7 @@ git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
 git pull
 ARGO_WEBHOOK=$(echo https://$(oc get route argocd-server --template='{{ .spec.host }}'/api/webhook  -n ${TEAM_NAME}-ci-cd))
 
-echo "==> Log to https://${GIT_SERVER} and perform the manual steps 2). The argocd webhook url is ${ARGO_WEBHOOK}. Test the webhook Project hooks -> Test -> Push events."
+echo "==> Log to https://${GIT_SERVER} and perform the manual steps 2). The argocd webhook url is ${ARGO_WEBHOOK} . Test the webhook Project hooks -> Test -> Push events."
 read -p "Press [Enter] when done to continue..."
 
 
@@ -219,7 +219,7 @@ read -p "Press [Enter] when done to continue..."
 
 NEXUS_URL=$(echo https://$(oc get route nexus --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd))
 echo export NEXUS_URL="${NEXUS_URL}" | tee -a ~/.bashrc -a ~/.zshrc
-echo "==> Log to ${NEXUS_URL}. See credentials on step 4)"
+echo "==> Log to ${NEXUS_URL} See credentials on step 4)"
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -321,7 +321,7 @@ read -p "Press [Enter] when done to continue..."
 
 JENKINS_URL=$(echo https://$(oc get route jenkins --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd))
 echo export JENKINS_URL="${JENKINS_URL}" | tee -a ~/.bashrc -a ~/.zshrc
-echo "==> Log to ${JENKINS_URL}. Verify Jenkins synced Jenkins -> Manage Jenkins -> Manage Credentials to view <TEAM_NAME>-ci-cd-git-auth"
+echo "==> Log to ${JENKINS_URL} Verify Jenkins synced Jenkins -> Manage Jenkins -> Manage Credentials to view <TEAM_NAME>-ci-cd-git-auth"
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -429,7 +429,7 @@ git push -u origin main
 
 PET_JEN_TOKEN=$(echo "https://$(oc get route jenkins --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd)/multibranch-webhook-trigger/invoke?token=pet-battle")
 
-echo "==> Log to https://${GIT_SERVER} . Add Pet Battle jenkins token ${PET_JEN_TOKEN} on pet-battle > Settings > Integrations."
+echo "==> Log to https://${GIT_SERVER} Add Pet Battle jenkins token ${PET_JEN_TOKEN} on pet-battle > Settings > Integrations."
 read -p "Press [Enter] when done to continue..."
 
 yq e '(.applications[] | (select(.name=="jenkins").values.deployment.env_vars[] | select(.name=="GITLAB_HOST")).value)|=env(GIT_SERVER)' -i /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml
@@ -441,7 +441,7 @@ git add .
 git commit -m  "ADD - jenkins pipelines config"
 git push
 
-echo "==> Log to ${JENKINS_URL}. See the seed job has scaffolded out a pipeline for the frontend in the Jenkins UI. It’s done this by looking in the pet-battle repo where it found the Jenkinsfile (our pipeline definition). However it will fail on the first execution. This is expected as we’re going write some stuff to fix it! - If after Jenkins restarts you do not see the job run, feel free to manually trigger it to get it going"
+echo "==> Log to ${JENKINS_URL} See the seed job has scaffolded out a pipeline for the frontend in the Jenkins UI. It’s done this by looking in the pet-battle repo where it found the Jenkinsfile (our pipeline definition). However it will fail on the first execution. This is expected as we’re going write some stuff to fix it! - If after Jenkins restarts you do not see the job run, feel free to manually trigger it to get it going"
 read -p "Press [Enter] when done to continue..."
 
 wget -O /projects/pet-battle/Jenkinsfile https://raw.githubusercontent.com/rht-labs/tech-exercise/main/tests/doc-regression-test-files/3a-jenkins-Jenkinsfile.groovy
@@ -456,7 +456,7 @@ git add Jenkinsfile
 git commit -m "Jenkinsfile updated with build stage"
 git push
 
-echo "==> Log to ${JENKINS_URL}. See the  pet-battle pipeline is running successfully. Use the Blue Ocean view,"
+echo "==> Log to ${JENKINS_URL} See the  pet-battle pipeline is running successfully. Use the Blue Ocean view,"
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -496,7 +496,7 @@ read -p "Press [Enter] when done to continue..."
 
 PET_API_TOKEN=$(echo https://$(oc -n ${TEAM_NAME}-ci-cd get route webhook --template='{{ .spec.host }}'))
 
-echo "==> Log to https://${GIT_SERVER} . Add Pet Battle API token ${PET_API_TOKEN} on pet-battle-api > Settings > Integrations. Test the hook with Project Hooks -> Test -> Push events"
+echo "==> Log to https://${GIT_SERVER} Add Pet Battle API token ${PET_API_TOKEN} on pet-battle-api > Settings > Integrations. Test the hook with Project Hooks -> Test -> Push events"
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/pet-battle-api
@@ -726,7 +726,7 @@ git add .
 git commit -m "ADD - save test results"
 git push
 
-echo "==> Log to ${JENKINS_URL}. Run twice pet-battle -> main job and see the test resunts under 'Web Code Coverage'"
+echo "==> Log to ${JENKINS_URL} Run twice pet-battle -> main job and see the test resunts under 'Web Code Coverage'"
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -853,7 +853,7 @@ git add .
 git commit -m "ADD - linting to the pipeline"
 git push
 
-echo "==> Log to ${JENKINS_URL}. See new build triggered and the linter running as part of it."
+echo "==> Log to ${JENKINS_URL} See new build triggered and the linter running as part of it."
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -879,7 +879,7 @@ git add Jenkinsfile
 git commit -m  "ADD - kube-linter step"
 git push
 
-echo "==> Log to ${JENKINS_URL}. See new build triggered and the kube linter running as part of it. See 'Error: found 1 lint errors'. Lets fix it."
+echo "==> Log to ${JENKINS_URL} See new build triggered and the kube linter running as part of it. See 'Error: found 1 lint errors'. Lets fix it."
 read -p "Press [Enter] when done to continue..."
 
 echo "==> Perform step 3) Edit /projects/pet-battle/chart/templates/deploymentconfig.yaml to fix ^^ previous error. Also bump Chart.yaml"
@@ -893,7 +893,7 @@ git add .
 git commit -m  "ADD - Liveliness probe"
 git push
 
-echo "==> Log to ${JENKINS_URL}. See new build triggered and the kube linter running as part of it. The prevous error has gone."
+echo "==> Log to ${JENKINS_URL} See new build triggered and the kube linter running as part of it. The prevous error has gone."
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -980,7 +980,7 @@ git add Jenkinsfile
 git commit -m  "ADD - OWASP ZAP scanning"
 git push
 
-echo "==> Log to ${JENKINS_URL}. On the left hand side, see 'OWASP Zed Attack Proxy' for test results."
+echo "==> Log to ${JENKINS_URL} On the left hand side, see 'OWASP Zed Attack Proxy' for test results."
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -1089,7 +1089,7 @@ echo
 ROX_URL=$(echo https://$(oc -n stackrox get route central --template='{{ .spec.host }}'))
 ROX_PSS=$(echo $(oc -n stackrox get secret central-htpasswd -o go-template='{{index .data "password" | base64decode}}'))
 
-echo "==> Log to ${ROX_URL}. Use admin / ${ROX_PSS}."
+echo "==> Log to ${ROX_URL} Use admin / ${ROX_PSS}."
 read -p "Press [Enter] when done to continue..."
 
 export ROX_API_TOKEN=$(oc -n stackrox get secret rox-api-token-tl500 -o go-template='{{index .data "token" | base64decode}}')
@@ -1128,7 +1128,7 @@ git add .
 git commit -m  "ADD - stackrox sealed secret"
 git push
 
-echo "==> Log to ${ROX_URL}. Use admin / ${ROX_PSS}. Perform 5), 6), 7), 8), 9), and 10)"
+echo "==> Log to ${ROX_URL} Use admin / ${ROX_PSS}. Perform 5), 6), 7), 8), 9), and 10)"
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -1148,7 +1148,7 @@ git add .
 git commit -m  "ADD - image scan stage"
 git push 
 
-echo "==> Log to ${JENKINS_URL}. See pet-battle pipeline running with the image-scan stag."
+echo "==> Log to ${JENKINS_URL} See pet-battle pipeline running with the image-scan stag."
 read -p "Press [Enter] when done to continue..."
 
 echo "==> Perform step Check Build/Deploy Time Violations 1) extend /projects/pet-battle/Jenkinsfile at //BUILD & DEPLOY CHECKS"
@@ -1159,10 +1159,10 @@ git add .
 git commit -m  "ADD - image scan stage"
 git push
 
-echo "==> Log to ${JENKINS_URL}. observer the pet-battle pipeline, check the logs for image scanning stage and detects some violations for deploy.(Blue Ocean)"
+echo "==> Log to ${JENKINS_URL} observer the pet-battle pipeline, check the logs for image scanning stage and detects some violations for deploy.(Blue Ocean)"
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Log to ${ROX_URL}. See Violations"
+echo "==> Log to ${ROX_URL} See Violations"
 read -p "Press [Enter] when done to continue..."
 
 echo "==> TODO - Add the violation fix from Dragons"
@@ -1282,7 +1282,7 @@ cd /projects/pet-battle-api
 git commit --allow-empty -m "test image-check step"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} .Observe the pet-battle-api pipeline running with the image-scan task."
+echo "==> Log to ${OCP_CONSOLE} Observe the pet-battle-api pipeline running with the image-scan task."
 read -p "Press [Enter] when done to continue..."
 
 echo "==> Perform step Breaking the Build  1) and 2) edit pet-battle-api/Dockerfile.jvm"
@@ -1293,10 +1293,10 @@ git add .
 git commit -m  "Expose port 22"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} .Observe the pet-battle-api pipeline running with the image-scan task. The run will fail on image-scan step due to :22 violation"
+echo "==> Log to ${OCP_CONSOLE} Observe the pet-battle-api pipeline running with the image-scan task. The run will fail on image-scan step due to :22 violation"
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Log to ${ROX_URL}. Back in ACS we can also see the failure in the Violations view"
+echo "==> Log to ${ROX_URL} Back in ACS we can also see the failure in the Violations view"
 read -p "Press [Enter] when done to continue..."
 
 echo "==> Perform step Breaking the Build 6) edit pet-battle-api/Dockerfile.jvm to remove :22 and fix the issue"
@@ -1307,7 +1307,7 @@ git add .
 git commit -m  "FIX - Security violation, remove port 22 exposure"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} .Observe the pet-battle-api pipeline running successfully again."
+echo "==> Log to ${OCP_CONSOLE} Observe the pet-battle-api pipeline running successfully again."
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -1342,10 +1342,10 @@ git add cosign.pub Jenkinsfile
 git commit -m  "ADD - cosign public key for image verification and Jenkinsfile updated"
 git push
 
-echo "==> Log to ${JENKINS_URL}. Observe the pet-battle pipeline running with the image-sign stage. (Blue Ocean)"
+echo "==> Log to ${JENKINS_URL} Observe the pet-battle pipeline running with the image-sign stage. (Blue Ocean)"
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Log to ${OCP_CONSOLE}. Builds > ImageStreams inside <TEAM_NAME>-test namespace and select pet-battle. See a tag ending with .sig which shows you that this is image signed."
+echo "==> Log to ${OCP_CONSOLE} Builds > ImageStreams inside <TEAM_NAME>-test namespace and select pet-battle. See a tag ending with .sig which shows you that this is image signed."
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/pet-battle
@@ -1411,10 +1411,10 @@ git add cosign.pub
 git commit -m  "ADD - cosign public key for image verification"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} .Observe the pet-battle-api pipeline running with the image-sign task."
+echo "==> Log to ${OCP_CONSOLE} Observe the pet-battle-api pipeline running with the image-sign task."
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Log to ${OCP_CONSOLE}. Builds > ImageStreams inside <TEAM_NAME>-test namespace and select pet-battle-api. See a tag ending with .sig which shows you that this is image signed."
+echo "==> Log to ${OCP_CONSOLE} Builds > ImageStreams inside <TEAM_NAME>-test namespace and select pet-battle-api. See a tag ending with .sig which shows you that this is image signed."
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/pet-battle-api
@@ -1468,7 +1468,7 @@ git add Jenkinsfile locustfile.py
 git commit -m  "ADD - load testing stage and locustfile"
 git push
 
-echo "==> Log to ${JENKINS_URL}. Obeserve the pet-battle pipeline running with the load testing stage, (Blue Ocean). If the pipeline fails due to the thresh-holds we set, you can always adjust it by updating the locustfile.py with higher values."
+echo "==> Log to ${JENKINS_URL} Obeserve the pet-battle pipeline running with the load testing stage, (Blue Ocean). If the pipeline fails due to the thresh-holds we set, you can always adjust it by updating the locustfile.py with higher values."
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -1545,7 +1545,7 @@ git add locustfile.py
 git commit -m  "ADD - locustfile for load testing"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} . Observe the pet-battle-api pipeline running with the load-testing task. If the pipeline fails due to the tresholds we set, you can always adjust it by updating the locustfile.py with higher values."
+echo "==> Log to ${OCP_CONSOLE} Observe the pet-battle-api pipeline running with the load-testing task. If the pipeline fails due to the tresholds we set, you can always adjust it by updating the locustfile.py with higher values."
 read -p "Press [Enter] when done to continue..."
 
 
