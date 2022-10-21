@@ -316,7 +316,7 @@ git add ubiquitous-journey/values-tooling.yaml
 git commit -m "Sealed secret of Git user creds is added"
 git push
 
-echo "==> Log to https://${ARGO_URL} and verify SealedSecret chart. Drill into the SealedSecret and see the git-auth secret has synced."
+echo "==> Log to ${ARGO_URL} and verify SealedSecret chart. Drill into the SealedSecret and see the git-auth secret has synced."
 read -p "Press [Enter] when done to continue..."
 
 JENKINS_URL=$(echo https://$(oc get route jenkins --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd))
@@ -352,7 +352,7 @@ git push
 cd /projects/tech-exercise
 helm upgrade --install uj --namespace ${TEAM_NAME}-ci-cd .
 
-echo "==> Log to https://${ARGO_URL} and verify staging-app-of-pb and test-app-of-pb."
+echo "==> Log to ${ARGO_URL} and verify staging-app-of-pb and test-app-of-pb."
 read -p "Press [Enter] when done to continue..."
 
 echo "Deploying Pet Battle Test"
@@ -397,7 +397,7 @@ git add .
 git commit -m  "ADD - pet battle apps"
 git push
 
-echo "==> Log to https://${ARGO_URL} and verify Pet Battle apps for test and stage. Drill into one eg test-app-of-pb and see each of the three components of PetBattle"
+echo "==> Log to ${ARGO_URL} and verify Pet Battle apps for test and stage. Drill into one eg test-app-of-pb and see each of the three components of PetBattle"
 read -p "Press [Enter] when done to continue..."
 
 echo "==> Log to ${OCP_CONSOLE} Developer View -> Topology and select your <TEAM_NAME>-test|stage ns -> Route )"
@@ -414,8 +414,9 @@ git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
 git pull
 
 echo
-echo "Jenkins Group"
-echo "--------------"
+echo "###########################################################"
+echo "### Attack of the Pipelines -> The Pipelines - Jenkins  ###"
+echo "###########################################################"
 echo
 
 echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1). Create a Project in GitLab under <TEAM_NAME> group called pet-battle. Make the project as public."
@@ -447,10 +448,6 @@ read -p "Press [Enter] when done to continue..."
 wget -O /projects/pet-battle/Jenkinsfile https://raw.githubusercontent.com/rht-labs/tech-exercise/main/tests/doc-regression-test-files/3a-jenkins-Jenkinsfile.groovy
 
 
-echo "==> HOTFIX TBR - Install skip-certificate-check and execute 'git config --global http.sslVerify false' on jenkins pod /projects/pet-battle/Jenkinsfile "
-read -p "Press [Enter] when done to continue..."
-
-
 cd /projects/pet-battle
 git add Jenkinsfile
 git commit -m "Jenkinsfile updated with build stage"
@@ -460,13 +457,10 @@ echo "==> Log to ${JENKINS_URL} See the  pet-battle pipeline is running successf
 read -p "Press [Enter] when done to continue..."
 
 echo
-echo "Tekton Group"
-echo "------------"
+echo "##########################################################"
+echo "### Attack of the Pipelines -> The Pipelines - Tekton  ###"
+echo "##########################################################"
 echo
-
-echo "==> HOTFIX TBR - Add 'sslVerify: false' workaround to all git instances at /projects/tech-exercise/tekton/templates/pipeline/maven-pipeline.yaml"
-read -p "Press [Enter] when done to continue..."
-
 
 echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1). Create a Project in GitLab under <TEAM_NAME> group called pet-battle-api. Make the project as internal."
 read -p "Press [Enter] when done to continue..."
@@ -491,7 +485,7 @@ git add .
 git commit -m  "ADD - tekton pipelines config"
 git push
 
-echo "==> Log to https://${ARGO_URL} and verify ubiquitous-jorney app has a tekton-pipeline resource"
+echo "==> Log to ${ARGO_URL} and verify ubiquitous-jorney app has a tekton-pipeline resource"
 read -p "Press [Enter] when done to continue..." 
 
 PET_API_TOKEN=$(echo https://$(oc -n ${TEAM_NAME}-ci-cd get route webhook --template='{{ .spec.host }}'))
@@ -555,7 +549,7 @@ git add .
 git commit -m  "ADD - sonarqube"
 git push
 
-echo "==> Log to https://${ARGO_URL} and verify that sonarqube is deployed."
+echo "==> Log to ${ARGO_URL} and verify that sonarqube is deployed."
 read -p "Press [Enter] when done to continue..." 
 
 SONAR_URL=$(echo https://$(oc get route sonarqube --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd))
