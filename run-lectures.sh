@@ -755,6 +755,7 @@ git add ubiquitous-journey/values-tooling.yaml
 git commit -m  "ADD - Allure tooling"
 git push
 
+sleep 60
 ALURE_URL=$(echo https://$(oc get route allure --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd)/allure-docker-service/projects/default/reports/latest/index.html)
 
 echo "==> Log to ${ALURE_URL} and verify installation is successful (admin/password)."
@@ -1560,6 +1561,113 @@ echo
 
 echo "==> XXX No instructions here? XXX."
 read -p "Press [Enter] when done to continue..."
+
+echo
+echo "######################################################"
+echo "### Return of the Monitoring -> Enable Monitoring  ###"
+echo "######################################################"
+echo
+
+echo "==> Perform Add Grafana & Service Monitor step 1) Open /projects/tech-exercise/pet-battle/test/values.yaml and /projects/tech-exercise/pet-battle/stage/values.yaml files. Update values for pet-battle-api adding 'servicemonitor: true' ."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add .
+git commit -m "ServiceMonitor enabled" 
+git push
+
+sleep 30
+oc get servicemonitor -n ${TEAM_NAME}-test -o yaml
+
+echo "==> Perform Add Grafana & Service Monitor step 2) Edit /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml to add grafana dashboard"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add .
+git commit -m "Grafana added"
+git push
+
+echo "==> Log to ${ARGO_URL} and verify that grafana app is deployed"
+read -p "Press [Enter] when done to continue..."
+
+GRAFANA_URL=$(echo https://$(oc get route grafana-route --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd))
+echo export GRAFANA_URL="${GRAFANA_URL}" | tee -a ~/.bashrc -a ~/.zshrc
+
+echo "==> Log to ${GRAFANA_URL} The Dashboards should be showing some basic information."
+read -p "Press [Enter] when done to continue..."
+
+curl -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/dogs
+curl -vL -X POST -d '{"OK":"🐈"}' $(oc get route/pet-battle-api -n <TEAM_NAME>-test --template='{{.spec.host}}')/cats/
+curl -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/api/dogs
+curl -vL -X POST -d '{"OK":"🦆"}' $(oc get route/pet-battle-api -n <TEAM_NAME>-test --template='{{.spec.host}}')/cats/
+curl -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/api/dogs
+curl -vL -X POST -d '{"OK":"🐶"}' $(oc get route/pet-battle-api -n <TEAM_NAME>-test --template='{{.spec.host}}')/cats/
+
+echo "==> Back to ${GRAFANA_URL} See some data populated into the 4xx and 5xx boards."
+read -p "Press [Enter] when done to continue..."
+
+GRAFANA_ADMIN_CREDEN=$(oc get secret grafana-admin-credentials -o=jsonpath='{.data.GF_SECURITY_ADMIN_PASSWORD}' -n ${TEAM_NAME}-ci-cd | base64 -d; echo -n)
+echo "GRAFANA_ADMIN_CREDEN: ${GRAFANA_ADMIN_CREDEN}"
+
+echo "==> Perform Create a Dashboard step 2), 3), 4), and 5). Use admin / ${GRAFANA_ADMIN_CREDEN} to sign to grafana"
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "##################################################"
+echo "### Return of the Monitoring -> Create Alerts  ###"
+echo "##################################################"
+echo
+
+cat << EOF >> /projects/pet-battle-api/chart/templates/prometheusrule.yaml
+    - alert: PetBattleMongoDBDiskUsage
+      annotations:
+        message: 'Pet Battle MongoDB disk usage in namespace {{ .Release.Namespace }} higher than 80%'
+      expr: (kubelet_volume_stats_used_bytes{persistentvolumeclaim="pet-battle-api-mongodb",namespace="{{ .Release.Namespace }}"} / kubelet_volume_stats_capacity_bytes{persistentvolumeclaim="pet-battle-api-mongodb",namespace="{{ .Release.Namespace }}"}) * 100 > 80
+      labels:
+        severity: {{ .Values.prometheusrules.severity | default "warning" }}
+EOF
+
+cat << EOF >> /projects/pet-battle-api/chart/templates/prometheusrule.yaml
+    - alert: PetBattleApiMaxHttpRequestTime
+      annotations:
+        message: 'Pet Battle Api max http request time over last 5 min in namespace {{ .Release.Namespace }} exceeds 1.5 sec.'
+      expr: max_over_time(http_server_requests_seconds_max{service="pet-battle-api",namespace="{{ .Release.Namespace }}"}[5m]) > 1.5
+      labels:
+        severity: {{ .Values.prometheusrules.severity | default "warning" }}
+EOF
+
+cd /projects/pet-battle-api
+mvn -ntp versions:set -DnewVersion=1.3.1
+
+cd /projects/pet-battle-api
+git add .
+git commit -m  "ADD - Alerting Rules extended"
+git push
+
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx . When the chart version is updated automatically, ArgoCD will detect your new changes and apply them to the cluster."
+read -p "Press [Enter] when done to continue..."
+
+oc project ${TEAM_NAME}-test
+oc rsh `oc get po -l app.kubernetes.io/component=mongodb -o name -n ${TEAM_NAME}-test` dd if=/dev/urandom of=/var/lib/mongodb/data/rando-calrissian bs=10M count=50
+
+echo "==> Log to ${OCP_CONSOLE} Observe alert firing  Developer -> Observe > Alerts. Select the right project zteam-test from the drop down menu. See PetBattleMongoDBDiskUsage alert ."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "############################################"
+echo "### Return of the Monitoring -> Logging  ###"
+echo "############################################"
+echo
+
+oc project ${TEAM_NAME}-test
+oc logs `oc get po -l app.kubernetes.io/component=mongodb -o name -n ${TEAM_NAME}-test` --since 5m
+
+KIBANA_URL=$(https://kibana-openshift-logging.${CLUSTER_DOMAIN})
+echo export KIBANA_URL="${KIBANA_URL}" | tee -a ~/.bashrc -a ~/.zshrc
+
+echo "==> Log to ${KIBANA_URL} and perform step 4), 5), 6), 7), 8), and 9) ."
+read -p "Press [Enter] when done to continue..."
+
 
 
 
