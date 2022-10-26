@@ -321,7 +321,7 @@ read -p "Press [Enter] when done to continue..."
 
 JENKINS_URL=$(echo https://$(oc get route jenkins --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd))
 echo export JENKINS_URL="${JENKINS_URL}" | tee -a ~/.bashrc -a ~/.zshrc
-echo "==> Log to ${JENKINS_URL} Verify Jenkins synced Jenkins -> Manage Jenkins -> Manage Credentials to view <TEAM_NAME>-ci-cd-git-auth"
+echo "==> Log to ${JENKINS_URL} Verify Jenkins synced Jenkins -> Manage Jenkins -> Manage Credentials to view ${TEAM_NAME}-ci-cd-git-auth"
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -400,7 +400,7 @@ git push
 echo "==> Log to ${ARGO_URL} and verify Pet Battle apps for test and stage. Drill into one eg test-app-of-pb and see each of the three components of PetBattle"
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Log to ${OCP_CONSOLE} Developer View -> Topology and select your <TEAM_NAME>-test|stage ns -> Route )"
+echo "==> Log to ${OCP_CONSOLE} Developer View -> Topology and select your ${TEAM_NAME}-test|stage ns -> Route )"
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -419,7 +419,7 @@ echo "### Attack of the Pipelines -> The Pipelines - Jenkins  ###"
 echo "###########################################################"
 echo
 
-echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1). Create a Project in GitLab under <TEAM_NAME> group called pet-battle. Make the project as public."
+echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1). Create a Project in GitLab under ${TEAM_NAME} group called pet-battle. Make the project as public."
 read -p "Press [Enter] when done to continue..."
 
 cd /projects
@@ -462,7 +462,7 @@ echo "### Attack of the Pipelines -> The Pipelines - Tekton  ###"
 echo "##########################################################"
 echo
 
-echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1). Create a Project in GitLab under <TEAM_NAME> group called pet-battle-api. Make the project as internal."
+echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1). Create a Project in GitLab under ${TEAM_NAME} group called pet-battle-api. Make the project as internal."
 read -p "Press [Enter] when done to continue..."
 
 cd /projects
@@ -501,7 +501,7 @@ git add .
 git commit -m  "UPDATED - pet-battle-version to 1.3.1"
 git push 
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project. Also, use the tkn command line to observe PipelineRun logs as well: 'tkn -n ${TEAM_NAME}-ci-cd pr logs -Lf'"
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project. Also, use the tkn command line to observe PipelineRun logs as well: 'tkn -n ${TEAM_NAME}-ci-cd pr logs -Lf'"
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -697,7 +697,7 @@ cd /projects/pet-battle-api
 git commit --allow-empty -m "TEST - running code analysis steps"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project. Wait until it finish'"
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project. Wait until it finish'"
 read -p "Press [Enter] when done to continue..."
 
 echo "==> Log to ${SONAR_URL} and verify and inspect the results in Sonarqube UI - pet-battle-api."
@@ -829,7 +829,7 @@ cd /projects/pet-battle-api
 git commit --allow-empty -m "test save-test-results step"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx -> Details'"
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx -> Details'"
 read -p "Press [Enter] when done to continue..."
 
 echo "==> Log to ${ALURE_URL} to browse to the uploaded test results from the pipeline in Allure. Test results + behaviours."
@@ -857,7 +857,7 @@ echo "### The Revenge of the Automated Testing -> Code Linting -> Tekton  ###"
 echo "#######################################################################"
 echo
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx. The Code Linting is done at the 'mvn test' step'."
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx. The Code Linting is done at the 'mvn test' step'."
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -917,7 +917,7 @@ cd /projects/pet-battle-api
 git commit --allow-empty -m "test kube-linter step"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx -> Details. See the kube-linter step'."
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx -> Details. See the kube-linter step'."
 read -p "Press [Enter] when done to continue..."
 
 
@@ -933,7 +933,7 @@ cd /projects/pet-battle-api
 git commit --allow-empty -m "test required-label-owner check"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx -> Details. 'Wait for the pipeline to sync and trigger a pet-battle-api build. This should now fail."
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx -> Details. 'Wait for the pipeline to sync and trigger a pet-battle-api build. This should now fail."
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/pet-battle-api
@@ -950,7 +950,7 @@ git add .
 git commit -m  "ADD - kube-linter owner labels"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx -> Details. This should now NOT fail."
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx -> Details. This should now NOT fail."
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -1233,7 +1233,7 @@ cd /projects/pet-battle-api
 git commit --allow-empty -m "test image-scan step"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx -> Details. See the image-scan task."
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx -> Details. See the image-scan task."
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/tech-exercise
@@ -1340,7 +1340,7 @@ git push
 echo "==> Log to ${JENKINS_URL} Observe the pet-battle pipeline running with the image-sign stage. (Blue Ocean)"
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Log to ${OCP_CONSOLE} Builds > ImageStreams inside <TEAM_NAME>-test namespace and select pet-battle. See a tag ending with .sig which shows you that this is image signed."
+echo "==> Log to ${OCP_CONSOLE} Builds > ImageStreams inside ${TEAM_NAME}-test namespace and select pet-battle. See a tag ending with .sig which shows you that this is image signed."
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/pet-battle
@@ -1409,7 +1409,7 @@ git push
 echo "==> Log to ${OCP_CONSOLE} Observe the pet-battle-api pipeline running with the image-sign task."
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Log to ${OCP_CONSOLE} Builds > ImageStreams inside <TEAM_NAME>-test namespace and select pet-battle-api. See a tag ending with .sig which shows you that this is image signed."
+echo "==> Log to ${OCP_CONSOLE} Builds > ImageStreams inside ${TEAM_NAME}-test namespace and select pet-battle-api. See a tag ending with .sig which shows you that this is image signed."
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/pet-battle-api
@@ -1596,12 +1596,12 @@ echo export GRAFANA_URL="${GRAFANA_URL}" | tee -a ~/.bashrc -a ~/.zshrc
 echo "==> Log to ${GRAFANA_URL} The Dashboards should be showing some basic information."
 read -p "Press [Enter] when done to continue..."
 
-curl -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/dogs
-curl -vL -X POST -d '{"OK":"🐈"}' $(oc get route/pet-battle-api -n <TEAM_NAME>-test --template='{{.spec.host}}')/cats/
-curl -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/api/dogs
-curl -vL -X POST -d '{"OK":"🦆"}' $(oc get route/pet-battle-api -n <TEAM_NAME>-test --template='{{.spec.host}}')/cats/
-curl -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/api/dogs
-curl -vL -X POST -d '{"OK":"🐶"}' $(oc get route/pet-battle-api -n <TEAM_NAME>-test --template='{{.spec.host}}')/cats/
+curl -k -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/dogs
+curl -k -vL -X POST -d '{"OK":"🐈"}' $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats/
+curl -k -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/api/dogs
+curl -k -vL -X POST -d '{"OK":"🦆"}' $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats/
+curl -k -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/api/dogs
+curl -k -vL -X POST -d '{"OK":"🐶"}' $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats/
 
 echo "==> Back to ${GRAFANA_URL} See some data populated into the 4xx and 5xx boards."
 read -p "Press [Enter] when done to continue..."
@@ -1644,7 +1644,7 @@ git add .
 git commit -m  "ADD - Alerting Rules extended"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your <TEAM_NAME>-ci-cd project -> pet-battle-api-xxx . When the chart version is updated automatically, ArgoCD will detect your new changes and apply them to the cluster."
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx . When the chart version is updated automatically, ArgoCD will detect your new changes and apply them to the cluster."
 read -p "Press [Enter] when done to continue..."
 
 oc project ${TEAM_NAME}-test
@@ -1660,15 +1660,226 @@ echo "############################################"
 echo
 
 oc project ${TEAM_NAME}-test
-oc logs `oc get po -l app.kubernetes.io/component=mongodb -o name -n ${TEAM_NAME}-test` --since 5m
+oc logs `oc get po -l app.kubernetes.io/component=mongodb -o name -n ${TEAM_NAME}-test` --since 1m
 
-KIBANA_URL=$(https://kibana-openshift-logging.${CLUSTER_DOMAIN})
+KIBANA_URL=$(echo https://kibana-openshift-logging.${CLUSTER_DOMAIN})
 echo export KIBANA_URL="${KIBANA_URL}" | tee -a ~/.bashrc -a ~/.zshrc
 
 echo "==> Log to ${KIBANA_URL} and perform step 4), 5), 6), 7), 8), and 9) ."
 read -p "Press [Enter] when done to continue..."
 
+echo
+echo "##################################################"
+echo "### The Deployments Strike Back - Autoscaling  ###"
+echo "##################################################"
+echo
 
+echo "==> Perform step 2) Edit /projects/tech-exercise/pet-battle/test/values.yaml and set pet-battle-api hpa to enabled:true"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add pet-battle/test/values.yaml
+git commit -m  "ADD - HPA enabled for test env"
+git push
+
+echo "==> Log to ${ARGO_URL} and see the new HPA object created on pet-battle-api."
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Hey load test running. Log to ${OCP_CONSOLE} see autoscaler kickin in and spinnin gup additional pods. Administrator -> Deployments (zteam-test). Administrator -> Workloads -> HPA (zteam-test). Developer -> Topology (zteam test) "
+
+sleep 10
+hey -t 30 -c 10 -n 10000 -H "Content-Type: application/json" -m GET https://$(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats 
+
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Log to ${OCP_CONSOLE} After a few moments you should see the autoscaler settle back down and the replicas are reduced."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "#############################################################"
+echo "### The Deployments Strike Back - Blue/Green Deployments  ###"
+echo "#############################################################"
+echo
+
+cat << EOF >> /projects/tech-exercise/pet-battle/test/values.yaml
+  # Pet Battle UI Blue
+  blue-pet-battle:
+    name: blue-pet-battle
+    enabled: true
+    source: http://nexus:8081/repository/helm-charts
+    chart_name: pet-battle
+    source_ref: 1.0.6 # helm chart version - may need adjusting!
+    values:
+      image_version: latest # container image version - may need adjusting!
+      fullnameOverride: blue-pet-battle
+      blue_green: active
+      # we controll the prod route via the "blue" chart for simplicity
+      prod_route: true
+      prod_route_svc_name: blue-pet-battle
+      config_map: '{
+        "catsUrl": "https://pet-battle-api-${TEAM_NAME}-test.${CLUSTER_DOMAIN}",
+        "tournamentsUrl": "https://pet-battle-tournament-${TEAM_NAME}-test.${CLUSTER_DOMAIN}",
+        "matomoUrl": "https://matomo-${TEAM_NAME}-ci-cd.${CLUSTER_DOMAIN}/",
+        "keycloak": {
+          "url": "https://keycloak-${TEAM_NAME}-test.${CLUSTER_DOMAIN}/auth/",
+          "realm": "pbrealm",
+          "clientId": "pbclient",
+          "redirectUri": "http://localhost:4200/tournament",
+          "enableLogging": true
+        }
+      }'
+
+  # Pet Battle UI Green
+  green-pet-battle:
+    name: green-pet-battle
+    enabled: true
+    source: http://nexus:8081/repository/helm-charts
+    chart_name: pet-battle
+    source_ref: 1.0.6 # helm chart version - may need adjusting!
+    values:
+      image_version: latest # container image version - may need adjusting!
+      fullnameOverride: green-pet-battle
+      blue_green: inactive
+      config_map: '{
+        "catsUrl": "https://pet-battle-api-${TEAM_NAME}-test.${CLUSTER_DOMAIN}",
+        "tournamentsUrl": "https://pet-battle-tournament-${TEAM_NAME}-test.${CLUSTER_DOMAIN}",
+        "matomoUrl": "https://matomo-${TEAM_NAME}-ci-cd.${CLUSTER_DOMAIN}/",
+         "keycloak": {
+          "url": "https://keycloak-${TEAM_NAME}-test.${CLUSTER_DOMAIN}/auth/",
+          "realm": "pbrealm",
+          "clientId": "pbclient",
+          "redirectUri": "http://localhost:4200/tournament",
+          "enableLogging": true
+        }
+      }'
+EOF
+
+cd /projects/tech-exercise
+git add pet-battle/test/values.yaml
+git commit -m  "ADD - blue & green environments"
+git push
+
+sleep 60
+oc get svc -l blue_green=inactive --no-headers -n ${TEAM_NAME}-test
+oc get svc -l blue_green=active --no-headers -n ${TEAM_NAME}-test
+
+echo "==> Perform step 4) Edit /projects/pet-battle/Jenkinsfile file to pdate the Jenkinsfile to do the deployment for the inactive. //BLUE / GREEN DEPLOYMENT GOES HERE"
+read -p "Press [Enter] when done to continue..."
+
+echo "==> Perform step 5), 6)"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle
+git add .
+git commit -m "ADD - Blue / Green deployment to pipeline"
+git push
+
+echo "==> Perform step 8)"
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "######################################################"
+echo "### The Deployments Strike Back - A/B Deployments  ###"
+echo "######################################################"
+echo
+
+echo "==> Perform A/B and Analytics step 1) Edit /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml and add matomo application."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add .
+git commit -m  "ADD - matomo app"
+git push 
+
+sleep 60
+oc get pod -n ${TEAM_NAME}-ci-cd
+
+MATOMO_URL=$(echo https://$(oc get route/matomo -n ${TEAM_NAME}-ci-cd --template='{{.spec.host}}'))
+echo export MATOMO_URL="${MATOMO_URL}" | tee -a ~/.bashrc -a ~/.zshrc
+
+echo "==> Log to ${MATOMO_URL} admin / My$uper$ecretPassword123# no data yet"
+read -p "Press [Enter] when done to continue..."
+
+cat << EOF >> /projects/tech-exercise/pet-battle/test/values.yaml
+  # Pet Battle UI - experiment
+  pet-battle-b:
+    name: pet-battle-b
+    enabled: true
+    source: http://nexus:8081/repository/helm-charts
+    chart_name: pet-battle
+    source_ref: 1.0.6 # helm chart version - may need adjusting!
+    values:
+      image_version: latest # container image version - may need adjusting!
+      fullnameOverride: pet-battle-b
+      route: false
+      config_map: '{
+        "catsUrl": "https://pet-battle-api-${TEAM_NAME}-test.${CLUSTER_DOMAIN}",
+        "tournamentsUrl": "https://pet-battle-tournament-${TEAM_NAME}-test.${CLUSTER_DOMAIN}",
+        "matomoUrl": "https://matomo-${TEAM_NAME}-ci-cd.${CLUSTER_DOMAIN}/",
+        "keycloak": {
+          "url": "https://keycloak-${TEAM_NAME}-test.${CLUSTER_DOMAIN}/auth/",
+          "realm": "pbrealm",
+          "clientId": "pbclient",
+          "redirectUri": "http://localhost:4200/tournament",
+          "enableLogging": true
+        }
+      }'
+EOF
+
+echo "==> Perform A/B Deployment step 1) Edit /projects/tech-exercise/pet-battle/test/values.yaml to extend the configuration for the existing Pet Battle deployment (A) by adding the a_b_deploy properties to the values section."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+git add pet-battle/test/values.yaml
+git commit -m  "ADD - A & B environments"
+git push
+
+sleep 60
+oc get svc -l app.kubernetes.io/instance=pet-battle -n ${TEAM_NAME}-test
+oc get svc -l app.kubernetes.io/instance=pet-battle-b -n ${TEAM_NAME}-test
+
+echo "==> Perform A/B Deployment step 5) and 6)"
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/pet-battle
+git add .
+git commit -m "ADD - Green banner"
+git push
+
+PET_BATTLE_URL=$(oc get route/pet-battle -n ${TEAM_NAME}-test --template='{{.spec.host}}')
+echo export PET_BATTLE_URL="${PET_BATTLE_URL}" | tee -a ~/.bashrc -a ~/.zshrc
+
+echo "==> Perform A/B Deployment step 8). PET_BATTLE_URL: ${PET_BATTLE_URL} ."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+yq eval -i .applications.pet-battle.values.a_b_deploy.a_weight='100' pet-battle/test/values.yaml
+yq eval -i .applications.pet-battle.values.a_b_deploy.b_weight='100' pet-battle/test/values.yaml
+git add pet-battle/test/values.yaml
+git commit -m  "service B weight increased to 50%"
+git push
+
+echo "==> Perform A/B Deployment step 10). PET_BATTLE_URL: ${PET_BATTLE_URL} ."
+read -p "Press [Enter] when done to continue..."
+
+cd /projects/tech-exercise
+yq eval -i .applications.pet-battle.values.a_b_deploy.a_weight='100' pet-battle/test/values.yaml
+yq eval -i .applications.pet-battle.values.a_b_deploy.b_weight='0' pet-battle/test/values.yaml
+git add pet-battle/test/values.yaml
+git commit -m  "service B weight increased to 100"
+git push
+
+echo "==> Perform A/B Deployment step 11). PET_BATTLE_URL: ${PET_BATTLE_URL} MATOMO_URL: ${MATOMO_URL} ."
+read -p "Press [Enter] when done to continue..."
+
+echo
+echo "###########################"
+echo "### Rise of the Cluster ###"
+echo "###########################"
+echo
+
+echo "==> Perform A/B Deployment step 11). PET_BATTLE_URL: ${PET_BATTLE_URL} MATOMO_URL: ${MATOMO_URL} ."
+read -p "Press [Enter] when done to continue...
 
 
 
