@@ -61,7 +61,7 @@ oc login --server=https://api.${CLUSTER_DOMAIN##apps.}:6443 -u ${USERNAME} -p ${
 oc new-project ${TEAM_NAME}-ci-cd || true
 
 #
-# Help
+# Helm
 #
 echo "Running helm"
 helm repo add tl500 https://rht-labs.com/todolist
@@ -1878,7 +1878,7 @@ echo "### Rise of the Cluster ###"
 echo "###########################"
 echo
 
-echo "==> Perform A/B Deployment step 11). PET_BATTLE_URL: ${PET_BATTLE_URL} MATOMO_URL: ${MATOMO_URL} ."
+echo "==> Additional content info. Student will not run it on the course."
 read -p "Press [Enter] when done to continue...
 
 
