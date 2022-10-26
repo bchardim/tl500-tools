@@ -441,6 +441,7 @@ cd /projects/tech-exercise
 git add .
 git commit -m  "ADD - jenkins pipelines config"
 git push
+sleep 90
 
 echo "==> Log to ${JENKINS_URL} See the seed job has scaffolded out a pipeline for the frontend in the Jenkins UI. It’s done this by looking in the pet-battle repo where it found the Jenkinsfile (our pipeline definition). However it will fail on the first execution. This is expected as we’re going write some stuff to fix it! - If after Jenkins restarts you do not see the job run, feel free to manually trigger it to get it going"
 read -p "Press [Enter] when done to continue..."
@@ -1682,7 +1683,7 @@ git add pet-battle/test/values.yaml
 git commit -m  "ADD - HPA enabled for test env"
 git push
 
-echo "==> Log to ${ARGO_URL} and see the new HPA object created on pet-battle-api."
+echo "==> Log to ${ARGO_URL} and see the new HPA object created on test-pet-battle-api."
 read -p "Press [Enter] when done to continue..."
 
 echo "==> Hey load test running. Log to ${OCP_CONSOLE} see autoscaler kickin in and spinnin gup additional pods. Administrator -> Deployments (zteam-test). Administrator -> Workloads -> HPA (zteam-test). Developer -> Topology (zteam test) "
