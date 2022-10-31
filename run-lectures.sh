@@ -511,6 +511,10 @@ echo "### The Revenge of the Automated Testing -> Sonarqube  ###"
 echo "##########################################################"
 echo
 
+cd /projects/tech-exercise
+git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
+git pull
+
 cat << EOF > /tmp/sonarqube-auth.yaml
 apiVersion: v1
 data:
