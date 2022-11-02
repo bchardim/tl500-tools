@@ -702,7 +702,7 @@ cd /projects/pet-battle-api
 git commit --allow-empty -m "TEST - running code analysis steps"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project. Wait until it finish'"
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project. Wait until it finish. [Refresh web browser ...]'"
 read -p "Press [Enter] when done to continue..."
 
 echo "==> Log to ${SONAR_URL} and verify and inspect the results in Sonarqube UI - pet-battle-api."
@@ -834,10 +834,11 @@ cd /projects/pet-battle-api
 git commit --allow-empty -m "test save-test-results step"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx -> Details'"
+ALURE_PETURL=$(echo https://$(oc get route allure --template='{{ .spec.host }}' -n ${TEAM_NAME}-ci-cd)/allure-docker-service/projects/pet-battle-api/reports/latest/index.html)
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx -> Details [Rerun pipeline if save-test-result step is not there ...]'"
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Log to ${ALURE_URL} to browse to the uploaded test results from the pipeline in Allure. Test results + behaviours."
+echo "==> Log to ${ALURE_PETURL} to browse to the uploaded test results from the pipeline in Allure. Test results + behaviours."
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -862,7 +863,7 @@ echo "### The Revenge of the Automated Testing -> Code Linting -> Tekton  ###"
 echo "#######################################################################"
 echo
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx. The Code Linting is done at the 'mvn test' step'."
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx. The Code Linting is done at the 'mvn' step'."
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -918,11 +919,12 @@ git add .
 git commit -m  "ADD - kube-linter checks"
 git push
 
+sleep
 cd /projects/pet-battle-api
 git commit --allow-empty -m "test kube-linter step"
 git push
 
-echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx -> Details. See the kube-linter step'."
+echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project -> pet-battle-api-xxx -> Details. See the kube-linter step'. [Rerun pipeline if needed]."
 read -p "Press [Enter] when done to continue..."
 
 
@@ -934,6 +936,7 @@ git add .
 git commit -m  "ADD - kube-linter required-label-owner check"
 git push
 
+sleep 30
 cd /projects/pet-battle-api
 git commit --allow-empty -m "test required-label-owner check"
 git push
@@ -1073,11 +1076,14 @@ git add .
 git commit -m  "ADD - zap scan pentest"
 git push
 
+sleep 30
 cd /projects/pet-battle-api
 git commit --allow-empty -m "test zap-scan step"
 git push
 
-echo "==> Log to ${ALURE_URL} and see Suites -> ZAP Scan Report."
+
+ZAP_URL=$(echo https://allure-${TEAM_NAME}-ci-cd.${CLUSTER_DOMAIN}/allure-docker-service/projects/zap-scan/reports/latest/index.html)
+echo "==> Log to ${ZAP_URL} and see Suites -> ZAP Scan Report."
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -1089,7 +1095,7 @@ echo
 ROX_URL=$(echo https://$(oc -n stackrox get route central --template='{{ .spec.host }}'))
 ROX_PSS=$(echo $(oc -n stackrox get secret central-htpasswd -o go-template='{{index .data "password" | base64decode}}'))
 
-echo "==> Log to ${ROX_URL} Use admin / ${ROX_PSS}."
+echo "==> Log to ${ROX_URL} Use admin/${ROX_PSS} ."
 read -p "Press [Enter] when done to continue..."
 
 export ROX_API_TOKEN=$(oc -n stackrox get secret rox-api-token-tl500 -o go-template='{{index .data "token" | base64decode}}')
@@ -1128,7 +1134,7 @@ git add .
 git commit -m  "ADD - stackrox sealed secret"
 git push
 
-echo "==> Log to ${ROX_URL} Use admin / ${ROX_PSS}. Perform 5), 6), 7), 8), 9), and 10)"
+echo "==> Log to ${ROX_URL} Use admin/${ROX_PSS} . Perform 5), 6), 7), 8), 9), and 10)"
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -1234,6 +1240,7 @@ git add .
 git commit -m  "ADD - image-scan step to pipeline"
 git push
 
+sleep 30
 cd /projects/pet-battle-api
 git commit --allow-empty -m "test image-scan step"
 git push
