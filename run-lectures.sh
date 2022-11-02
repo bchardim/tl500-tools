@@ -698,6 +698,7 @@ git add .
 git commit -m  "ADD - code-analysis & check steps"
 git push
 
+sleep 30
 cd /projects/pet-battle-api
 git commit --allow-empty -m "TEST - running code analysis steps"
 git push
@@ -830,6 +831,7 @@ git add .
 git commit -m  "ADD - save-test-results step"
 git push
 
+sleep 30
 cd /projects/pet-battle-api
 git commit --allow-empty -m "test save-test-results step"
 git push
@@ -919,7 +921,7 @@ git add .
 git commit -m  "ADD - kube-linter checks"
 git push
 
-sleep
+sleep 30
 cd /projects/pet-battle-api
 git commit --allow-empty -m "test kube-linter step"
 git push
@@ -1285,6 +1287,7 @@ git add .
 git commit -m  "ADD - rox-image-check-task"
 git push
 
+sleep 30
 cd /projects/pet-battle-api
 git commit --allow-empty -m "test image-check step"
 git push
