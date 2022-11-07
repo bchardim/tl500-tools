@@ -1312,7 +1312,7 @@ read -p "Press [Enter] when done to continue..."
 echo "==> Perform step Breaking the Build 6) edit pet-battle-api/Dockerfile.jvm to remove :22 and fix the issue"
 read -p "Press [Enter] when done to continue..."
 
-cd /project/pet-battle-api
+cd /projects/pet-battle-api
 git add .
 git commit -m  "FIX - Security violation, remove port 22 exposure"
 git push
@@ -1360,7 +1360,7 @@ read -p "Press [Enter] when done to continue..."
 
 cd /projects/pet-battle
 oc registry login $(oc registry info) --insecure=true
-cosign verify --key k8s://${TEAM_NAME}-ci-cd/${TEAM_NAME}-cosign default-route-openshift-image-registry.${CLUSTER_DOMAIN}/${TEAM_NAME}-test/pet-battle:1.2.0
+cosign verify --key k8s://${TEAM_NAME}-ci-cd/${TEAM_NAME}-cosign default-route-openshift-image-registry.${CLUSTER_DOMAIN}/${TEAM_NAME}-test/pet-battle:1.2.0 --allow-insecure-registry
 
 echo
 echo "########################################################################"
@@ -1415,6 +1415,7 @@ git add .
 git commit -m  "ADD - image-signing-task"
 git push
 
+sleep 30
 cp /tmp/cosign.pub /projects/pet-battle-api/
 cd /projects/pet-battle-api
 git add cosign.pub
@@ -1429,7 +1430,7 @@ read -p "Press [Enter] when done to continue..."
 
 cd /projects/pet-battle-api
 oc registry login $(oc registry info) --insecure=true
-cosign verify --key k8s://${TEAM_NAME}-ci-cd/${TEAM_NAME}-cosign default-route-openshift-image-registry.${CLUSTER_DOMAIN}/${TEAM_NAME}-test/pet-battle-api:1.3.1
+cosign verify --key k8s://${TEAM_NAME}-ci-cd/${TEAM_NAME}-cosign default-route-openshift-image-registry.${CLUSTER_DOMAIN}/${TEAM_NAME}-test/pet-battle-api:1.3.1 --allow-insecure-registry
 
 echo
 echo "########################################################################"
@@ -1550,6 +1551,7 @@ git add .
 git commit -m  "ADD - load testing task"
 git push
 
+sleep 30
 cd /projects/pet-battle-api
 git add locustfile.py
 git commit -m  "ADD - locustfile for load testing"
