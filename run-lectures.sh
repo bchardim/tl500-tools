@@ -1454,7 +1454,7 @@ from locust import HttpUser, task, events
 class getCat(HttpUser):
   @task
   def cat(self):
-      self.client.get("/home")
+      self.client.get("/home", verify=False)
 
 @events.quitting.add_listener
 def _(environment, **kw):
@@ -1496,7 +1496,7 @@ from locust import HttpUser, task, events
 class getCat(HttpUser):
   @task
   def cat(self):
-      self.client.get("/cats")
+      self.client.get("/cats", verify=False)
 
 @events.quitting.add_listener
 def _(environment, **kw):
