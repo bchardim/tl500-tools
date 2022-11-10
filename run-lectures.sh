@@ -446,8 +446,11 @@ sleep 90
 echo "==> Log to ${JENKINS_URL} See the seed job has scaffolded out a pipeline for the frontend in the Jenkins UI. It’s done this by looking in the pet-battle repo where it found the Jenkinsfile (our pipeline definition). However it will fail on the first execution. This is expected as we’re going write some stuff to fix it! - If after Jenkins restarts you do not see the job run, feel free to manually trigger it to get it going"
 read -p "Press [Enter] when done to continue..."
 
-wget -O /projects/pet-battle/Jenkinsfile https://raw.githubusercontent.com/rht-labs/tech-exercise/main/tests/doc-regression-test-files/3a-jenkins-Jenkinsfile.groovy
+#PROD
+#wget -O /projects/pet-battle/Jenkinsfile https://raw.githubusercontent.com/rht-labs/tech-exercise/main/tests/doc-regression-test-files/3a-jenkins-Jenkinsfile.groovy
 
+#TEST
+wget -O /projects/pet-battle/Jenkinsfile https://raw.githubusercontent.com/rht-labs/tech-exercise/015ab696ede04762589fd959c32c18d3ded4f14b/tests/doc-regression-test-files/3a-jenkins-Jenkinsfile.groovy
 
 cd /projects/pet-battle
 git add Jenkinsfile
