@@ -469,6 +469,12 @@ echo
 echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1). Create a Project in GitLab under ${TEAM_NAME} group called pet-battle-api. Make the project as internal."
 read -p "Press [Enter] when done to continue..."
 
+### TODO: This must be documented on the lectures
+cd /projects/tech-exercise
+git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
+git pull
+###
+
 cd /projects
 git clone https://github.com/rht-labs/pet-battle-api.git && cd pet-battle-api
 git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/pet-battle-api.git
