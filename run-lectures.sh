@@ -860,6 +860,9 @@ echo
 echo "==> Perform step 4) Edit /projects/pet-battle/Jenkinsfile file to extend extend the stage{ "Build" } of the Jenkinsfile with the lint task. //Lint exercise here."
 read -p "Press [Enter] when done to continue..."
 
+### TODO: change document to include it
+cd /projects/pet-battle
+###
 git add .
 git commit -m "ADD - linting to the pipeline"
 git push
