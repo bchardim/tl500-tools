@@ -447,10 +447,7 @@ echo "==> Log to ${JENKINS_URL} See the seed job has scaffolded out a pipeline f
 read -p "Press [Enter] when done to continue..."
 
 #PROD
-#wget -O /projects/pet-battle/Jenkinsfile https://raw.githubusercontent.com/rht-labs/tech-exercise/main/tests/doc-regression-test-files/3a-jenkins-Jenkinsfile.groovy
-
-#TEST
-wget -O /projects/pet-battle/Jenkinsfile https://raw.githubusercontent.com/rht-labs/tech-exercise/9fb89722ea3fcbd759f099d8a8df579963cc2bc2/tests/doc-regression-test-files/3a-jenkins-Jenkinsfile.groovy
+wget -O /projects/pet-battle/Jenkinsfile https://raw.githubusercontent.com/rht-labs/tech-exercise/main/tests/doc-regression-test-files/3a-jenkins-Jenkinsfile.groovy
 
 cd /projects/pet-battle
 git add Jenkinsfile
