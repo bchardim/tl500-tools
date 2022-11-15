@@ -916,6 +916,12 @@ echo "### The Revenge of the Automated Testing -> Kube Linting -> Tekton  ###"
 echo "#######################################################################"
 echo
 
+### TODO: This must be documented on the lectures 
+cd /projects/tech-exercise
+git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
+git pull
+###
+
 curl -sLo /projects/tech-exercise/tekton/templates/tasks/kube-linter.yaml \
 https://raw.githubusercontent.com/tektoncd/catalog/main/task/kube-linter/0.1/kube-linter.yaml
 
