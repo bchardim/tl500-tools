@@ -508,6 +508,7 @@ git add .
 git commit -m  "UPDATED - pet-battle-version to 1.3.1"
 git push 
 
+sleep 30
 echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project. Also, use the tkn command line to observe PipelineRun logs as well: 'tkn -n ${TEAM_NAME}-ci-cd pr logs -Lf'"
 read -p "Press [Enter] when done to continue..."
 
