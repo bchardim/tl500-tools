@@ -502,6 +502,7 @@ read -p "Press [Enter] when done to continue..."
 
 cd /projects/pet-battle-api
 mvn -ntp versions:set -DnewVersion=1.3.1
+sleep 30
 
 cd /projects/pet-battle-api
 git add .
