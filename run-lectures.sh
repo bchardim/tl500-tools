@@ -1376,6 +1376,7 @@ echo "==> Log to ${OCP_CONSOLE} Builds > ImageStreams inside ${TEAM_NAME}-test n
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/pet-battle
+oc login --server=https://api.${CLUSTER_DOMAIN##apps.}:6443 -u ${USERNAME} -p ${PASSWORD}
 oc registry login $(oc registry info) --insecure=true
 cosign verify --key k8s://${TEAM_NAME}-ci-cd/${TEAM_NAME}-cosign default-route-openshift-image-registry.${CLUSTER_DOMAIN}/${TEAM_NAME}-test/pet-battle:1.2.0 --allow-insecure-registry
 
