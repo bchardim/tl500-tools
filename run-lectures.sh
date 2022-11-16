@@ -1631,12 +1631,16 @@ echo export GRAFANA_URL="${GRAFANA_URL}" | tee -a ~/.bashrc -a ~/.zshrc
 echo "==> Log to ${GRAFANA_URL} The Dashboards should be showing some basic information."
 read -p "Press [Enter] when done to continue..."
 
-curl -k -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/dogs
-curl -k -vL -X POST -d '{"OK":"🐈"}' $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats/
-curl -k -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/api/dogs
-curl -k -vL -X POST -d '{"OK":"🦆"}' $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats/
-curl -k -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/api/dogs
-curl -k -vL -X POST -d '{"OK":"🐶"}' $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats/
+for i in {1..3}
+do
+  sleep 60
+  curl -k -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/dogs
+  curl -k -vL -X POST -d '{"OK":"🐈"}' $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats/
+  curl -k -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/api/dogs
+  curl -k -vL -X POST -d '{"OK":"🦆"}' $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats/
+  curl -k -vL $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/api/dogs
+  curl -k -vL -X POST -d '{"OK":"🐶"}' $(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats/
+done
 
 echo "==> Back to ${GRAFANA_URL} See some data populated into the 4xx and 5xx boards."
 read -p "Press [Enter] when done to continue..."
