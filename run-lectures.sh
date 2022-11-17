@@ -1825,18 +1825,24 @@ echo
 echo "==> Perform A/B and Analytics step 1) Edit /projects/tech-exercise/ubiquitous-journey/values-tooling.yaml and add matomo application."
 read -p "Press [Enter] when done to continue..."
 
+### TODO: This must be documented on the lectures
+cd /projects/tech-exercise
+git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
+git pull
+###
+
 cd /projects/tech-exercise
 git add .
 git commit -m  "ADD - matomo app"
 git push 
 
-sleep 60
+sleep 120
 oc get pod -n ${TEAM_NAME}-ci-cd
 
 MATOMO_URL=$(echo https://$(oc get route/matomo -n ${TEAM_NAME}-ci-cd --template='{{.spec.host}}'))
 echo export MATOMO_URL="${MATOMO_URL}" | tee -a ~/.bashrc -a ~/.zshrc
 
-echo "==> Log to ${MATOMO_URL} admin / My$uper$ecretPassword123# no data yet"
+echo "==> Log to ${MATOMO_URL} admin / 'My\$uper\$ecretPassword123#' no data yet"
 read -p "Press [Enter] when done to continue..."
 
 cat << EOF >> /projects/tech-exercise/pet-battle/test/values.yaml
@@ -1865,7 +1871,7 @@ cat << EOF >> /projects/tech-exercise/pet-battle/test/values.yaml
       }'
 EOF
 
-echo "==> Perform A/B Deployment step 1) Edit /projects/tech-exercise/pet-battle/test/values.yaml to extend the configuration for the existing Pet Battle deployment (A) by adding the a_b_deploy properties to the values section."
+echo "==> Perform A/B Deployment 2) Edit /projects/tech-exercise/pet-battle/test/values.yaml to extend the configuration for the existing Pet Battle deployment (A) by adding the a_b_deploy properties to the values section."
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/tech-exercise
@@ -1918,7 +1924,4 @@ echo "###########################"
 echo
 
 echo "==> Additional content info. Student will not run it on the course."
-read -p "Press [Enter] when done to continue...
-
-
-
+read -p "Press [Enter] when done to continue..."
