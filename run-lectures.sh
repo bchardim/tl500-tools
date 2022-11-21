@@ -9,11 +9,11 @@
 #
 USERNAME=$1
 PASSWORD=$2
+TEAM_NAME=$3
 
 #
 # Configuration
 #
-TEAM_NAME=zteam
 CLUSTER_DOMAIN=apps.ocp4.example.com
 GIT_SERVER=gitlab-ce.apps.ocp4.example.com
 OCP_CONSOLE=https://console-openshift-console.apps.ocp4.example.com
@@ -141,7 +141,7 @@ echo "### The Manual Menace -> Ubiquitous Journey ###"
 echo "###############################################"
 echo
 
-echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1), 2), 3), 4) and 5) [zteam,public tech-exercise,internal]"
+echo "==> Log to https://${GIT_SERVER} and perform the manual steps 1), 2), 3), 4) and 5) [${TEAM_NAME},public tech-exercise,internal]"
 read -p "Press [Enter] when done to continue..."
 
 source ~/.bashrc
@@ -1689,7 +1689,7 @@ read -p "Press [Enter] when done to continue..."
 oc project ${TEAM_NAME}-test
 oc rsh `oc get po -l app.kubernetes.io/component=mongodb -o name -n ${TEAM_NAME}-test` dd if=/dev/urandom of=/var/lib/mongodb/data/rando-calrissian bs=10M count=50
 
-echo "==> Log to ${OCP_CONSOLE} Observe alert firing  Developer -> Observe > Alerts. Select the right project zteam-test from the drop down menu. See PetBattleMongoDBDiskUsage alert ."
+echo "==> Log to ${OCP_CONSOLE} Observe alert firing  Developer -> Observe > Alerts. Select the right project ${TEAM_NAME}-test from the drop down menu. See PetBattleMongoDBDiskUsage alert ."
 read -p "Press [Enter] when done to continue..."
 
 echo
@@ -1724,7 +1724,7 @@ git push
 echo "==> Log to ${ARGO_URL} and see the new HPA object created on test-pet-battle-api."
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Hey load test running. Log to ${OCP_CONSOLE} see autoscaler kickin in and spinnin gup additional pods. Administrator -> Deployments (zteam-test). Administrator -> Workloads -> HPA (zteam-test). Developer -> Topology (zteam test) "
+echo "==> Hey load test running. Log to ${OCP_CONSOLE} see autoscaler kickin in and spinnin gup additional pods. Administrator -> Deployments (${TEAM_NAME}-test). Administrator -> Workloads -> HPA (${TEAM_NAME}-test). Developer -> Topology (${TEAM_NAME} test) "
 
 sleep 10
 hey -t 30 -c 10 -n 10000 -H "Content-Type: application/json" -m GET https://$(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats 
