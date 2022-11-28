@@ -1676,7 +1676,7 @@ cat << EOF >> /projects/pet-battle-api/chart/templates/prometheusrule.yaml
 EOF
 
 cd /projects/pet-battle-api
-mvn -ntp versions:set -DnewVersion=1.3.1
+mvn -ntp versions:set -DnewVersion=1.3.2
 
 cd /projects/pet-battle-api
 git add .
