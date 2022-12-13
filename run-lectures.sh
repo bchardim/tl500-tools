@@ -264,6 +264,7 @@ echo "#################################################"
 echo "### Attack of the Pipelines -> Sealed Secrets ###"
 echo "#################################################"
 echo
+oc login --server=https://api.${CLUSTER_DOMAIN##apps.}:6443 -u ${USERNAME} -p ${PASSWORD} >/dev/null 2>&1
 
 cd /projects/tech-exercise
 git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
@@ -492,6 +493,7 @@ git add .
 git commit -m  "ADD - tekton pipelines config"
 git push
 
+sleep 60
 echo "==> Log to ${ARGO_URL} and verify ubiquitous-jorney app has a tekton-pipeline resource"
 read -p "Press [Enter] when done to continue..." 
 
@@ -502,14 +504,14 @@ read -p "Press [Enter] when done to continue..."
 
 cd /projects/pet-battle-api
 mvn -ntp versions:set -DnewVersion=1.3.1
-sleep 30
+sleep 100
 
 cd /projects/pet-battle-api
 git add .
 git commit -m  "UPDATED - pet-battle-version to 1.3.1"
 git push 
 
-sleep 30
+sleep 60
 echo "==> Log to ${OCP_CONSOLE} Observe Pipeline running -> Pipelines -> Pipelines in your ${TEAM_NAME}-ci-cd project. Also, use the tkn command line to observe PipelineRun logs as well: 'tkn -n ${TEAM_NAME}-ci-cd pr logs -Lf'"
 read -p "Press [Enter] when done to continue..."
 
@@ -518,6 +520,7 @@ echo "##########################################################"
 echo "### The Revenge of the Automated Testing -> Sonarqube  ###"
 echo "##########################################################"
 echo
+oc login --server=https://api.${CLUSTER_DOMAIN##apps.}:6443 -u ${USERNAME} -p ${PASSWORD} >/dev/null 2>&1
 
 cd /projects/tech-exercise
 git remote set-url origin https://${GIT_SERVER}/${TEAM_NAME}/tech-exercise.git
@@ -856,6 +859,7 @@ echo "########################################################################"
 echo "### The Revenge of the Automated Testing -> Code Linting -> Jenkins  ###"
 echo "########################################################################"
 echo
+oc login --server=https://api.${CLUSTER_DOMAIN##apps.}:6443 -u ${USERNAME} -p ${PASSWORD} >/dev/null 2>&1
 
 echo "==> Perform step 4) Edit /projects/pet-battle/Jenkinsfile file to extend extend the stage{ "Build" } of the Jenkinsfile with the lint task. //Lint exercise here."
 read -p "Press [Enter] when done to continue..."
@@ -915,6 +919,7 @@ echo "#######################################################################"
 echo "### The Revenge of the Automated Testing -> Kube Linting -> Tekton  ###"
 echo "#######################################################################"
 echo
+oc login --server=https://api.${CLUSTER_DOMAIN##apps.}:6443 -u ${USERNAME} -p ${PASSWORD} >/dev/null 2>&1
 
 ### TODO: This must be documented on the lectures 
 cd /projects/tech-exercise
@@ -1161,6 +1166,7 @@ echo "##########################################################################
 echo "### The Revenge of the Automated Testing -> Image Security -> Jenkins  ###"
 echo "##########################################################################"
 echo
+oc login --server=https://api.${CLUSTER_DOMAIN##apps.}:6443 -u ${USERNAME} -p ${PASSWORD} >/dev/null 2>&1
 
 echo "==> Perform step 1) ROX_CREDS using /projects/pet-battle/Jenkinsfile"
 read -p "Press [Enter] when done to continue..."
@@ -1198,6 +1204,7 @@ echo "#########################################################################"
 echo "### The Revenge of the Automated Testing -> Image Security -> Tekton  ###"
 echo "#########################################################################"
 echo
+oc login --server=https://api.${CLUSTER_DOMAIN##apps.}:6443 -u ${USERNAME} -p ${PASSWORD} >/dev/null 2>&1
 
 cd /projects/tech-exercise
 cat <<'EOF' > tekton/templates/tasks/rox-image-scan.yaml
@@ -1656,6 +1663,7 @@ echo "##################################################"
 echo "### Return of the Monitoring -> Create Alerts  ###"
 echo "##################################################"
 echo
+oc login --server=https://api.${CLUSTER_DOMAIN##apps.}:6443 -u ${USERNAME} -p ${PASSWORD} >/dev/null 2>&1
 
 cat << EOF >> /projects/pet-battle-api/chart/templates/prometheusrule.yaml
     - alert: PetBattleMongoDBDiskUsage
@@ -1712,6 +1720,7 @@ echo "##################################################"
 echo "### The Deployments Strike Back - Autoscaling  ###"
 echo "##################################################"
 echo
+oc login --server=https://api.${CLUSTER_DOMAIN##apps.}:6443 -u ${USERNAME} -p ${PASSWORD} >/dev/null 2>&1
 
 echo "==> Perform step 2) Edit /projects/tech-exercise/pet-battle/test/values.yaml and set pet-battle-api hpa to enabled:true"
 read -p "Press [Enter] when done to continue..."
