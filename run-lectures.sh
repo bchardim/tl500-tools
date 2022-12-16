@@ -1764,10 +1764,18 @@ git push
 echo "==> Log to ${ARGO_URL} and see the new HPA object created on test-pet-battle-api."
 read -p "Press [Enter] when done to continue..."
 
-echo "==> Hey load test running. Log to ${OCP_CONSOLE} see autoscaler kickin in and spinnin gup additional pods. Administrator -> Deployments (${TEAM_NAME}-test). Administrator -> Workloads -> HPA (${TEAM_NAME}-test). Developer -> Topology (${TEAM_NAME} test) "
+echo "==> K6 load test running... Log to ${OCP_CONSOLE} see autoscaler kicking in and spinnin up additional pods. Administrator -> Workloads -> HPA (${TEAM_NAME}-test). Developer -> Topology (${TEAM_NAME} test)"
 
 sleep 10
-hey -t 30 -c 10 -n 10000 -H "Content-Type: application/json" -m GET https://$(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats 
+cat << EOF > /tmp/load.js
+import http from 'k6/http';
+import { sleep } from 'k6';
+export default function () {
+  http.get('https://$(oc get route/pet-battle-api -n ${TEAM_NAME}-test --template='{{.spec.host}}')/cats');
+}
+EOF
+
+k6 run --insecure-skip-tls-verify --vus 100 --duration 30s /tmp/load.js
 
 read -p "Press [Enter] when done to continue..."
 
