@@ -4,12 +4,39 @@
 # Lecture https://rht-labs.com/tech-exercise/#
 #
 
-#
-# Input
-#
-USERNAME=$1
-PASSWORD=$2
-TEAM_NAME=$3
+# Help function
+help() {
+  echo -e "Usage: $0 -u=<USERNAME> -p=<PASSWORD> -t=<TEAM_NAME>"
+  echo -e "Example: $0 -u=lab01 -p=lab01 -t=01team"
+  exit 1
+}
+
+# Parse and check input
+for i in "$@"; do
+  case $i in
+    -u=*)
+      USERNAME="${i#*=}"
+      shift
+      ;;
+    -p=*)
+      PASSWORD="${i#*=}"
+      shift
+      ;;
+    -t=*)
+      TEAM_NAME="${i#*=}"
+      shift
+      ;;
+    *)
+      help
+      ;;
+  esac
+done
+
+# Check vars
+if [ -z ${USERNAME} ] || [ -z ${PASSWORD} ] || [ -z ${TEAM_NAME} ]
+then
+  help
+fi
 
 #
 # Configuration
@@ -18,12 +45,16 @@ CLUSTER_DOMAIN=apps.ocp4.example.com
 GIT_SERVER=gitlab-ce.apps.ocp4.example.com
 OCP_CONSOLE=https://console-openshift-console.apps.ocp4.example.com
 
+
 if [ "$1" == "--reset" ]
 then
   helm uninstall my tl500/todolist --namespace ${TEAM_NAME}-ci-cd
   helm uninstall argocd --namespace ${TEAM_NAME}-ci-cd
   helm uninstall uj --namespace ${TEAM_NAME}-ci-cd
   oc delete all --all -n ${TEAM_NAME}-ci-cd
+  oc delete all --all -n ${TEAM_NAME}-test
+  oc delete all --all -n ${TEAM_NAME}-stage
+  oc delete all --all -n ${TEAM_NAME}-dev
   exit 0
 fi
 
