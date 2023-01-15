@@ -99,7 +99,7 @@ helm repo add tl500 https://rht-labs.com/todolist
 helm search repo todolist
 helm install my tl500/todolist --namespace ${TEAM_NAME}-ci-cd || true
 echo https://$(oc get route/my-todolist -n ${TEAM_NAME}-ci-cd --template='{{.spec.host}}')
-sleep 60
+sleep 180
 oc get pods -n ${TEAM_NAME}-ci-cd
 helm uninstall my --namespace ${TEAM_NAME}-ci-cd
 
