@@ -46,7 +46,7 @@ GIT_SERVER=gitlab-ce.apps.ocp4.example.com
 OCP_CONSOLE=https://console-openshift-console.apps.ocp4.example.com
 
 #
-# Patch
+# Patches
 #
 ARGO_PATCH=""
 #ARGO_PATCH="--version 0.4.9"
@@ -376,8 +376,9 @@ yq e '(.applications[] | (select(.name=="test-app-of-pb").enabled)) |=true' -i /
 yq e '(.applications[] | (select(.name=="staging-app-of-pb").enabled)) |=true' -i /projects/tech-exercise/values.yaml
 
 if [[ $(yq e '.applications[] | select(.name=="keycloak") | length' /projects/tech-exercise/pet-battle/test/values.yaml) < 1 ]]; then
-    yq e '.applications.keycloak = {"name": "keycloak","enabled": true,"source": "https://github.com/petbattle/pet-battle-infra","source_ref": "${KEYCLOACK_PATCH}","source_path": "keycloak","values": {"app_domain": "CLUSTER_DOMAIN"}}' -i /projects/tech-exercise/pet-battle/test/values.yaml
-    sed -i "s|CLUSTER_DOMAIN|$CLUSTER_DOMAIN|" /projects/tech-exercise/pet-battle/test/values.yaml
+    yq e '.applications.keycloak = {"name": "keycloak","enabled": true,"source": "https://github.com/petbattle/pet-battle-infra","source_ref": "BRANCH_ID","source_path": "keycloak","values": {"app_domain": "CLUSTER_DOMAIN"}}' -i /projects/tech-exercise/pet-battle/test/values.yaml
+    sed -i "s|CLUSTER_DOMAIN|${CLUSTER_DOMAIN}|" /projects/tech-exercise/pet-battle/test/values.yaml
+    sed -i "s|BRANCH_ID|${KEYCLOACK_PATCH}|" /projects/tech-exercise/pet-battle/test/values.yaml
 fi
 
 echo "See keycloak object"
