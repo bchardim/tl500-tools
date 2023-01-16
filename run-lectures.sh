@@ -50,6 +50,8 @@ OCP_CONSOLE=https://console-openshift-console.apps.ocp4.example.com
 #
 ARGO_PATCH=""
 #ARGO_PATCH="--version 0.4.9"
+KEYCLOACK_PATCH="main"
+#KEYCLOACK_PATCH="5c5872adc2f4803050b897fe545580ee81899606"
 
 
 if [ "$1" == "--reset" ]
@@ -374,13 +376,13 @@ yq e '(.applications[] | (select(.name=="test-app-of-pb").enabled)) |=true' -i /
 yq e '(.applications[] | (select(.name=="staging-app-of-pb").enabled)) |=true' -i /projects/tech-exercise/values.yaml
 
 if [[ $(yq e '.applications[] | select(.name=="keycloak") | length' /projects/tech-exercise/pet-battle/test/values.yaml) < 1 ]]; then
-    yq e '.applications.keycloak = {"name": "keycloak","enabled": true,"source": "https://github.com/petbattle/pet-battle-infra","source_ref": "main","source_path": "keycloak","values": {"app_domain": "CLUSTER_DOMAIN"}}' -i /projects/tech-exercise/pet-battle/test/values.yaml
+    yq e '.applications.keycloak = {"name": "keycloak","enabled": true,"source": "https://github.com/petbattle/pet-battle-infra","source_ref": "${KEYCLOACK_PATCH}","source_path": "keycloak","values": {"app_domain": "CLUSTER_DOMAIN"}}' -i /projects/tech-exercise/pet-battle/test/values.yaml
     sed -i "s|CLUSTER_DOMAIN|$CLUSTER_DOMAIN|" /projects/tech-exercise/pet-battle/test/values.yaml
 fi
 
 echo "See keycloak object"
 cat /projects/tech-exercise/pet-battle/test/values.yaml
-cat /projects/tech-exercise/pet-battle/test/values.yaml
+sleep 180
 
 cd /projects/tech-exercise
 git add .
