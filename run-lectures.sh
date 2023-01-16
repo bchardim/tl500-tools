@@ -45,6 +45,12 @@ CLUSTER_DOMAIN=apps.ocp4.example.com
 GIT_SERVER=gitlab-ce.apps.ocp4.example.com
 OCP_CONSOLE=https://console-openshift-console.apps.ocp4.example.com
 
+#
+# Patch
+#
+ARGO_PATCH=""
+#ARGO_PATCH="--version 0.4.9"
+
 
 if [ "$1" == "--reset" ]
 then
@@ -154,7 +160,7 @@ EOF
 helm upgrade --install argocd \
   --namespace ${TEAM_NAME}-ci-cd \
   -f /projects/tech-exercise/argocd-values.yaml \
-  redhat-cop/gitops-operator
+  redhat-cop/gitops-operator ${ARGO_PATCH}
 
 sleep 60
 oc get pods -n ${TEAM_NAME}-ci-cd
