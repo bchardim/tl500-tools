@@ -48,11 +48,8 @@ OCP_CONSOLE=https://console-openshift-console.apps.ocp4.example.com
 #
 # Patches
 #
-ARGO_PATCH=""
-#ARGO_PATCH="--version 0.4.9"
-KEYCLOACK_PATCH="main"
-#KEYCLOACK_PATCH="5c5872adc2f4803050b897fe545580ee81899606"
-
+ARGO_PATCH="--version 0.4.9"
+KEYCLOACK_PATCH="5c5872adc2f4803050b897fe545580ee81899606"
 
 if [ "$1" == "--reset" ]
 then
@@ -975,7 +972,7 @@ git add .
 git commit -m  " ADD - kube-linter task"
 git push
 
-echo "==> Perform step 2) Edit /projects/tech-exercise/tekton/templates/pipelines/maven-pipeline.yaml file to add kube-linter task."
+echo "==> Perform step 2) Edit /projects/tech-exercise/tekton/templates/pipelines/maven-pipeline.yaml file to add kube-linter task. Modify mvn step to run after kube-linter"
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/tech-exercise
@@ -1298,7 +1295,7 @@ git add .
 git commit -m  "ADD - rox-image-scan-task"
 git push 
 
-echo "==> Perform step 3) Edit /projects/tech-exercise/tekton/templates/pipeline/maven-pipeline.yaml to add image-scan step."
+echo "==> Perform step 3) Edit /projects/tech-exercise/tekton/templates/pipeline/maven-pipeline.yaml to add image-scan step. Edit helm-package step to runafter image-scan"
 read -p "Press [Enter] when done to continue..."
 
 cd /projects/tech-exercise
