@@ -49,7 +49,7 @@ OCP_CONSOLE=https://console-openshift-console.apps.ocp4.example.com
 # Patches
 #
 ARGO_PATCH="--version 0.4.9"
-KEYCLOACK_PATCH="5c5872adc2f4803050b897fe545580ee81899606"
+KEYCLOACK_PATCH="labs1.0.1"
 
 if [ "$1" == "--reset" ]
 then
